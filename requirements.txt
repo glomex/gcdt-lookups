@@ -1,0 +1,5 @@
+# Dependencies have to be in sync with other packages (gcdt, glomex-credstash)
+# gcdt dependency is from gcdt => gcdt-plugins
+pycrypto==2.6.1
+
+# Other dependencies
