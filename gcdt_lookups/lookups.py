@@ -13,11 +13,15 @@ from .gcdt_defaults import DEFAULT_CONFIG
 log = logging.getLogger(__name__)
 
 
-def _resolve_lookups(awsclient, config, lookups):
+GCDT_TOOLS = ['kumo', 'tenkai', 'ramuda', 'yugen']
+
+
+def _resolve_lookups(context, config, lookups):
     """
     Resolve all lookups in the config inplace
     note: this was implemented differently to return a resolved config before.
     """
+    awsclient = context['_awsclient']
     # stackset contains stacks and certificates!!
     stackset = _identify_stacks_recurse(config, lookups)
 
@@ -33,10 +37,31 @@ def _resolve_lookups(awsclient, config, lookups):
                 }
             })
         elif 'stack' in lookups:
-            stackdata.update({stack: get_outputs_for_stack(awsclient, stack)})
+            try:
+                stackdata.update({stack: get_outputs_for_stack(awsclient, stack)})
+            except ClientError as e:
+                # probably a greedy lookup
+                pass
 
-    # now resolve lookups
-    _resolve_lookups_recurse(awsclient, config, stackdata, lookups)
+    # the gcdt-lookups plugin does "greedy" lookups
+    for k in config.keys():
+        try:
+            if isinstance(config[k], basestring):
+                config[k] = _resolve_single_value(awsclient, config[k],
+                                                  stackdata, lookups)
+            else:
+                _resolve_lookups_recurse(awsclient, config[k], stackdata, lookups)
+        except Exception as e:
+            if k in [t for t in GCDT_TOOLS if t != context['tool']]:
+                # for "other" deployment phases & tools lookups can fail
+                # ... which is quite normal!
+                # only lookups for config['tool'] must not fail!
+                pass
+            else:
+                log.exception(e)
+                #raise ValueError('lookup for \'%s\' failed' % k)
+                context['error'] = \
+                    'lookup for \'%s\' failed (%s)' % (k, config[k])
 
 
 def _resolve_lookups_recurse(awsclient, config, stacks, lookups):
@@ -46,17 +71,22 @@ def _resolve_lookups_recurse(awsclient, config, stacks, lookups):
             if isinstance(value, dict):
                 _resolve_lookups_recurse(awsclient, value, stacks, lookups)
             elif isinstance(value, list):
-                for elem in value:
-                    _resolve_lookups_recurse(awsclient, elem, stacks, lookups)
+                for i, elem in enumerate(value):
+                    #_resolve_lookups_recurse(awsclient, elem, stacks, lookups)
+                    if isinstance(elem, basestring):
+                        value[i] = _resolve_single_value(awsclient, elem,
+                                                         stacks, lookups)
+                    else:
+                        _resolve_lookups_recurse(awsclient, elem, stacks, lookups)
             else:
                 config[key] = _resolve_single_value(awsclient, value,
-                                                      stacks, lookups)
+                                                    stacks, lookups)
 
 
 def _resolve_single_value(awsclient, value, stacks, lookups):
     # split lookup in elements and resolve the lookup using servicediscovery
     if isinstance(value, basestring):
-        if value.startswith('lookup'):
+        if value.startswith('lookup:'):
             splits = value.split(':')
             if splits[1] == 'stack' and 'stack' in lookups:
                 return stacks[splits[2]][splits[3]]
@@ -113,11 +143,7 @@ def lookup(params):
                    config - The stack details, etc..)
     """
     context, config = params
-    try:
-        _resolve_lookups(context['_awsclient'], config, config.get('lookups', []))
-    except Exception as e:
-        log.error(e.message)
-        context['error'] = e.message
+    _resolve_lookups(context, config, config.get('lookups', []))
 
 
 def register():

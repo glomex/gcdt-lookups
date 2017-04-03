@@ -35,10 +35,15 @@ def test_stack_lookup(mock_get_outputs_for_stack):
             'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
     }
     # sample from data-platform, operations
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
+
     config = {
         'LambdaLookupARN': 'lookup:stack:dp-preprod:EC2BasicsLambdaArn'
     }
-    _resolve_lookups('my_awsclient', config, ['stack'])
+    _resolve_lookups(context, config, ['stack'])
     mock_get_outputs_for_stack.assert_called_once_with(
         'my_awsclient', 'dp-preprod')
 
@@ -50,10 +55,14 @@ def test_stack_lookup(mock_get_outputs_for_stack):
             return_value='img-123456')
 def test_baseami_lookup(mock_get_base_ami):
     # sample from mes-ftp, ftpbackend
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'kumo'
+    }
     config = {
         'BaseAMIID': 'lookup:baseami'
     }
-    _resolve_lookups('my_awsclient', config, ['baseami'])
+    _resolve_lookups(context, config, ['baseami'])
     mock_get_base_ami.assert_called_once_with(
         'my_awsclient', ['569909643510'])
 
@@ -71,18 +80,22 @@ def test_read_config_mock_service_discovery_ssl(
     # Mock Output (List SSL Certs)
     mock_get_ssl_certificate.return_value = 'arn:aws:iam::11:server-certificate/cloudfront/2016/wildcard.dp.glomex.cloud-2016-03'
     # sample from mes-proxy
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
     config = {
         'DefaultInstancePolicyARN': 'lookup:stack:portal-dev:DefaultInstancePolicyARN',
         'SSLCert': 'lookup:ssl:wildcard.glomex.com'
-        }
+    }
 
-    _resolve_lookups('my_awsclient', config, ['ssl', 'stack'])
+    _resolve_lookups(context, config, ['ssl', 'stack'])
     mock_get_outputs_for_stack.assert_called_once_with(
         'my_awsclient', 'portal-dev')
     mock_get_ssl_certificate.assert_called_once_with(
         'my_awsclient', 'wildcard.glomex.com')
     assert config.get('SSLCert') == \
-        'arn:aws:iam::11:server-certificate/cloudfront/2016/wildcard.dp.glomex.cloud-2016-03'
+           'arn:aws:iam::11:server-certificate/cloudfront/2016/wildcard.dp.glomex.cloud-2016-03'
 
 
 # tests taken and modified from former config_reader tests
@@ -101,19 +114,23 @@ def test_lookup_selective_stack_lookup_all_lookups(
         'EC2BasicsLambdaArn': 'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
     }
 
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'kumo'
+    }
     config = {
         'secret': 'lookup:secret:nameOfSecretPassword',
         'sslCert': 'lookup:ssl:wildcard.dp.glomex.cloud-2016-03',
         'stack': 'lookup:stack:dp-preprod:EC2BasicsLambdaArn'
     }
 
-    _resolve_lookups('my_awsclient', config, ['ssl', 'stack', 'secret'])
+    _resolve_lookups(context, config, ['ssl', 'stack', 'secret'])
 
     assert config.get('secret') == 'secretPassword'
     assert config.get('sslCert') == \
-        'arn:aws:iam::11:server-certificate/cloudfront/2016/wildcard.dp.glomex.cloud-2016-03'
+           'arn:aws:iam::11:server-certificate/cloudfront/2016/wildcard.dp.glomex.cloud-2016-03'
     assert config.get('stack') == \
-        'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12'
+           'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12'
 
 
 # I split the combined testcases into seperate instances
@@ -133,13 +150,17 @@ def test_lookup_selective_stack_lookup_limit_to_stack_lookup(
         'EC2BasicsLambdaArn': 'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
     }
 
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
     config = {
         'secret': 'lookup:secret:nameOfSecretPassword',
         'sslCert': 'lookup:ssl:wildcard.dp.glomex.cloud-2016-03',
         'stack': 'lookup:stack:dp-preprod:EC2BasicsLambdaArn'
     }
 
-    _resolve_lookups('my_awsclient', config, ['stack'])
+    _resolve_lookups(context, config, ['stack'])
 
     assert config.get('secret') == 'lookup:secret:nameOfSecretPassword'
     assert config.get('sslCert') == \
@@ -163,13 +184,17 @@ def test_lookup_selective_stack_lookup_limit_to_secret_lookup(
         'EC2BasicsLambdaArn': 'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
     }
 
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'kumo'
+    }
     config = {
         'secret': 'lookup:secret:nameOfSecretPassword',
         'sslCert': 'lookup:ssl:wildcard.dp.glomex.cloud-2016-03',
         'stack': 'lookup:stack:dp-preprod:EC2BasicsLambdaArn'
     }
 
-    _resolve_lookups('my_awsclient', config, ['secret'])
+    _resolve_lookups(context, config, ['secret'])
 
     assert config.get('secret') == 'secretPassword'
     assert config.get('sslCert') == \
@@ -193,13 +218,17 @@ def test_lookup_selective_stack_lookup_limit_to_ssl_lookup(
         'EC2BasicsLambdaArn': 'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
     }
 
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
     config = {
         'secret': 'lookup:secret:nameOfSecretPassword',
         'sslCert': 'lookup:ssl:wildcard.dp.glomex.cloud-2016-03',
         'stack': 'lookup:stack:dp-preprod:EC2BasicsLambdaArn'
     }
 
-    _resolve_lookups('my_awsclient', config, ['ssl'])
+    _resolve_lookups(context, config, ['ssl'])
 
     assert config.get('secret') == 'lookup:secret:nameOfSecretPassword'
     assert config.get('sslCert') == \
@@ -211,16 +240,20 @@ def test_lookup_selective_stack_lookup_limit_to_ssl_lookup(
 @mock.patch('gcdt_lookups.lookups.get_base_ami')
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
 def test_lookup_kumo_sample(mock_get_outputs_for_stack,
-                                              mock_get_base_ami):
+                            mock_get_base_ami):
     mock_get_base_ami.return_value = 'ami-91307fe2'
     mock_get_outputs_for_stack.return_value = {
         'DefaultInstancePolicyARN': 'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O',
         'DefaultVPCId': 'vpc-88d2a7ec',
     }
 
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'kumo'
+    }
     config = {u'kumo': OrderedDict([(u'cloudformation', OrderedDict([(u'StackName', u'gcdt-sample-stack'), (u'VPCId', u'lookup:stack:infra-dev:DefaultVPCId'), (u'ScaleMinCapacity', u'1'), (u'ScaleMaxCapacity', u'1'), (u'InstanceType', u't2.micro'), (u'ELBDNSName', u'supercars'), (u'BaseStackName', u'infra-dev'), (u'DefaultInstancePolicyARN', u'lookup:stack:infra-dev:DefaultInstancePolicyARN'), (u'AMI', u'lookup:baseami')]))]), u'ramuda': {u'settings_file': u'settings.json'}}
 
-    _resolve_lookups('my_awsclient', config, ['ssl', 'stack', 'secret', 'baseami'])
+    _resolve_lookups(context, config, ['ssl', 'stack', 'secret', 'baseami'])
 
     assert config['kumo'] == {
         'cloudformation': {
@@ -241,10 +274,14 @@ def test_lookup_kumo_sample(mock_get_outputs_for_stack,
             return_value='foobar1234')
 def test_secret_lookup(mock_get_secret):
     # sample from ops-captaincrunch-slack
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
     config = {
         'bot_token': 'lookup:secret:captaincrunch.bot_token'
     }
-    _resolve_lookups('my_awsclient', config, ['secret'])
+    _resolve_lookups(context, config, ['secret'])
     mock_get_secret.assert_called_once_with(
         'my_awsclient', 'captaincrunch.bot_token')
 
@@ -255,10 +292,14 @@ def test_secret_lookup(mock_get_secret):
             return_value='foobar1234')
 def test_secret_lookup_continue_if_not_found(mock_get_secret, caplog):
     mock_get_secret.side_effect = ItemNotFound('not found, sorry')
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
     config = {
         'bazz_value': 'lookup:secret:foo.bar.bazz:CONTINUE_IF_NOT_FOUND'
     }
-    _resolve_lookups('my_awsclient', config, ['secret'])
+    _resolve_lookups(context, config, ['secret'])
     mock_get_secret.assert_called_once_with(
         'my_awsclient', 'foo.bar.bazz')
 
@@ -275,7 +316,10 @@ def test_secret_lookup_continue_if_not_found(mock_get_secret, caplog):
             return_value='foobar1234')
 def test_secret_lookup_error_case(mock_get_secret, caplog):
     mock_get_secret.side_effect = ItemNotFound('not found, sorry')
-    context = {'_awsclient': 'my_awsclient'}
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
     config = {
         'lookups': ['secret'],
         'bazz_value': 'lookup:secret:foo.bar.bazz'
@@ -283,7 +327,8 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
     lookup((context, config))
     mock_get_secret.assert_called_once_with(
         'my_awsclient', 'foo.bar.bazz')
-    assert context['error'] == 'not found, sorry'
+    assert context['error'] == \
+           'lookup for \'bazz_value\' failed (lookup:secret:foo.bar.bazz)'
     assert config.get('bazz_value') == \
            'lookup:secret:foo.bar.bazz'
     assert caplog.record_tuples == [
