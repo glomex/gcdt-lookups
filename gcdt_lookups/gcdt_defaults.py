@@ -23,13 +23,13 @@ from __future__ import unicode_literals, print_function
 DEFAULT_CONFIG = {
     'lookups': ['secret', 'ssl', 'stack', 'baseami'],
     'plugins': {
-        'datadog_integration': {
+        'gcdt_datadog_integration': {
             'datadog_api_key': 'lookup:secret:datadog.api_key'
         },
-        'slack_integration': {
+        'gcdt_slack_integration': {
             'slack_webhook': 'lookup:secret:slack.webhook:CONTINUE_IF_NOT_FOUND'
         },
-        'glomex_lookups': {
+        'gcdt_lookups': {
             'ami_accountid': '569909643510'
         }
     }

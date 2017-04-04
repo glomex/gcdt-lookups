@@ -101,7 +101,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
                     else:
                         raise e
             elif splits[1] == 'baseami' and 'baseami' in lookups:
-                ami_accountid = DEFAULT_CONFIG['plugins']['glomex_lookups']['ami_accountid']
+                ami_accountid = DEFAULT_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
                 return get_base_ami(awsclient, [ami_accountid])
     return value
 

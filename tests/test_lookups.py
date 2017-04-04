@@ -339,5 +339,5 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
 
 
 def test_ami_accountid_config():
-    ami_accountid = DEFAULT_CONFIG['plugins']['glomex_lookups']['ami_accountid']
+    ami_accountid = DEFAULT_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
     assert ami_accountid == '569909643510'
