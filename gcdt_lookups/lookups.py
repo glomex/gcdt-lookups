@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, print_function
 import logging
 
+from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
 from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack, \
     get_base_ami
