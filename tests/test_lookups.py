@@ -29,7 +29,8 @@ def test_identify_stacks_recurse():
 
 
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
-def test_stack_lookup(mock_get_outputs_for_stack):
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
+def test_stack_lookup(mock_stack_exists, mock_get_outputs_for_stack):
     mock_get_outputs_for_stack.return_value = {
         'EC2BasicsLambdaArn':
             'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
@@ -102,7 +103,9 @@ def test_read_config_mock_service_discovery_ssl(
 @mock.patch('gcdt_lookups.lookups.get_ssl_certificate')
 @mock.patch('gcdt_lookups.lookups.get_secret')
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
 def test_lookup_selective_stack_lookup_all_lookups(
+        mock_stack_exists,
         mock_get_outputs_for_stack, mock_get_secret,
         mock_get_ssl_certificate):
     # Mock Output (Credstash result)
@@ -138,7 +141,9 @@ def test_lookup_selective_stack_lookup_all_lookups(
 @mock.patch('gcdt_lookups.lookups.get_ssl_certificate')
 @mock.patch('gcdt_lookups.lookups.get_secret')
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
 def test_lookup_selective_stack_lookup_limit_to_stack_lookup(
+        mock_stack_exists,
         mock_get_outputs_for_stack, mock_get_secret,
         mock_get_ssl_certificate):
     # Mock Output (Credstash result)
@@ -239,8 +244,11 @@ def test_lookup_selective_stack_lookup_limit_to_ssl_lookup(
 
 @mock.patch('gcdt_lookups.lookups.get_base_ami')
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
-def test_lookup_kumo_sample(mock_get_outputs_for_stack,
-                            mock_get_base_ami):
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
+def test_lookup_kumo_sample(
+        mock_stack_exists,
+        mock_get_outputs_for_stack,
+        mock_get_base_ami):
     mock_get_base_ami.return_value = 'ami-91307fe2'
     mock_get_outputs_for_stack.return_value = {
         'DefaultInstancePolicyARN': 'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O',
@@ -335,6 +343,9 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
         ('gcdt_lookups.lookups',
          logging.ERROR,
          'not found, sorry'),
+        ('gcdt_lookups.lookups',
+         logging.ERROR,
+         'lookup for \'bazz_value\' failed (lookup:secret:foo.bar.bazz)')
     ]
 
 
