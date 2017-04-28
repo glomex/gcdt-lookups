@@ -9,7 +9,10 @@ gcdt: https://github.com/glomex/gcdt
 
 Features include:
 
-* 
+* lookup for secrets
+* lookup for stack outputs
+* lookup for ssl certificates
+* lookup baseami
 
 
 ## Running tests
