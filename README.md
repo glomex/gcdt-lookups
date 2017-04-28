@@ -12,7 +12,7 @@ Features include:
 * lookup for secrets
 * lookup for stack outputs
 * lookup for ssl certificates
-* lookup baseami
+* lookup baseami 
 
 
 ## Running tests
