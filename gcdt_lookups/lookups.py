@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 """A gcdt-plugin to do lookups."""
 from __future__ import unicode_literals, print_function
-import logging
 
 from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
 from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack, \
     get_base_ami
+from gcdt.gcdt_logging import getLogger
+from gcdt.gcdt_awsclient import ClientError
+from gcdt.kumo_core import stack_exists
 
 from .credstash_utils import get_secret, ItemNotFound
 from .gcdt_defaults import DEFAULT_CONFIG
 
-log = logging.getLogger(__name__)
 
+log = getLogger(__name__)
 
 GCDT_TOOLS = ['kumo', 'tenkai', 'ramuda', 'yugen']
 
@@ -59,10 +61,11 @@ def _resolve_lookups(context, config, lookups):
                 # only lookups for config['tool'] must not fail!
                 pass
             else:
-                log.exception(e)
-                #raise ValueError('lookup for \'%s\' failed' % k)
+                log.debug(e.message, exc_info=True)  # this adds the traceback
                 context['error'] = \
                     'lookup for \'%s\' failed (%s)' % (k, config[k])
+                log.error(e.message)
+                log.error(context['error'])
 
 
 def _resolve_lookups_recurse(awsclient, config, stacks, lookups):
@@ -90,6 +93,8 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
         if value.startswith('lookup:'):
             splits = value.split(':')
             if splits[1] == 'stack' and 'stack' in lookups:
+                if not stack_exists(awsclient, splits[2]):
+                    raise Exception('Stack \'%s\' does not exist.' % splits[2])
                 return stacks[splits[2]][splits[3]]
             elif splits[1] == 'ssl' and 'ssl' in lookups:
                 return stacks[splits[2]].values()[0]
@@ -144,7 +149,10 @@ def lookup(params):
                    config - The stack details, etc..)
     """
     context, config = params
-    _resolve_lookups(context, config, config.get('lookups', []))
+    try:
+        _resolve_lookups(context, config, config.get('lookups', []))
+    except Exception as e:
+        context['error'] = e.message
 
 
 def register():
