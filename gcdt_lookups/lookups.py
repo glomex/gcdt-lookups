@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """A gcdt-plugin to do lookups."""
 from __future__ import unicode_literals, print_function
+import sys
 
 from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
@@ -13,6 +14,10 @@ from gcdt.kumo_core import stack_exists
 from .credstash_utils import get_secret, ItemNotFound
 from .gcdt_defaults import DEFAULT_CONFIG
 
+PY3 = sys.version_info[0] >= 3
+
+if PY3:
+    basestring = str
 
 log = getLogger(__name__)
 
@@ -61,10 +66,10 @@ def _resolve_lookups(context, config, lookups):
                 # only lookups for config['tool'] must not fail!
                 pass
             else:
-                log.debug(e.message, exc_info=True)  # this adds the traceback
+                log.debug(str(e), exc_info=True)  # this adds the traceback
                 context['error'] = \
                     'lookup for \'%s\' failed (%s)' % (k, config[k])
-                log.error(e.message)
+                log.error(str(e))
                 log.error(context['error'])
 
 
@@ -97,7 +102,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
                     raise Exception('Stack \'%s\' does not exist.' % splits[2])
                 return stacks[splits[2]][splits[3]]
             elif splits[1] == 'ssl' and 'ssl' in lookups:
-                return stacks[splits[2]].values()[0]
+                return list(stacks[splits[2]].values())[0]
             elif splits[1] == 'secret' and 'secret' in lookups:
                 try:
                     return get_secret(awsclient, splits[2])
@@ -152,7 +157,8 @@ def lookup(params):
     try:
         _resolve_lookups(context, config, config.get('lookups', []))
     except Exception as e:
-        context['error'] = e.message
+        #context['error'] = e.message
+        context['error'] = str(e)
 
 
 def register():
