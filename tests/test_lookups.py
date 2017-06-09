@@ -8,7 +8,7 @@ from pytest_catchlog import caplog  # fixture!
 
 from gcdt_lookups.lookups import _resolve_lookups, _identify_stacks_recurse, lookup
 from gcdt_lookups.credstash_utils import ItemNotFound
-from gcdt_lookups.gcdt_defaults import DEFAULT_CONFIG
+from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
 
 
 def test_identify_stacks_recurse():
@@ -350,5 +350,5 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
 
 
 def test_ami_accountid_config():
-    ami_accountid = DEFAULT_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
+    ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
     assert ami_accountid == '569909643510'
