@@ -100,7 +100,15 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
             if splits[1] == 'stack' and 'stack' in lookups:
                 if not stack_exists(awsclient, splits[2]):
                     raise Exception('Stack \'%s\' does not exist.' % splits[2])
-                return stacks[splits[2]][splits[3]]
+                if len(splits) == 3:
+                    # lookup:stack:<stack-name>
+                    return stacks[splits[2]]
+                elif len(splits) == 4:
+                    # lookup:stack:<stack-name>:<output-name>
+                    return stacks[splits[2]][splits[3]]
+                else:
+                    log.warn('lookup format not as expected for \'%s\'', value)
+                    return value
             elif splits[1] == 'ssl' and 'ssl' in lookups:
                 return list(stacks[splits[2]].values())[0]
             elif splits[1] == 'secret' and 'secret' in lookups:
