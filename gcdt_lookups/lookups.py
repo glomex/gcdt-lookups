@@ -10,9 +10,9 @@ from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack, \
 from gcdt.gcdt_logging import getLogger
 from gcdt.gcdt_awsclient import ClientError
 from gcdt.kumo_core import stack_exists
+from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
 
 from .credstash_utils import get_secret, ItemNotFound
-from .gcdt_defaults import DEFAULT_CONFIG
 
 PY3 = sys.version_info[0] >= 3
 
@@ -112,7 +112,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
                     else:
                         raise e
             elif splits[1] == 'baseami' and 'baseami' in lookups:
-                ami_accountid = DEFAULT_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
+                ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
                 return get_base_ami(awsclient, [ami_accountid])
     return value
 
