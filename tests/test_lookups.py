@@ -30,7 +30,7 @@ def test_identify_stacks_recurse():
 
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
 @mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
-def test_stack_lookup(mock_stack_exists, mock_get_outputs_for_stack):
+def test_stack_lookup_value(mock_stack_exists, mock_get_outputs_for_stack):
     mock_get_outputs_for_stack.return_value = {
         'EC2BasicsLambdaArn':
             'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
@@ -50,6 +50,31 @@ def test_stack_lookup(mock_stack_exists, mock_get_outputs_for_stack):
 
     assert config.get('LambdaLookupARN') == \
            'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12'
+
+
+@mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
+def test_stack_lookup_stack_output(mock_stack_exists, mock_get_outputs_for_stack):
+    # lookup:stack:<stack_name> w/o value gets us the whole stack_output
+    stack_output = {
+        'EC2BasicsLambdaArn':
+            'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
+    }
+    mock_get_outputs_for_stack.return_value = stack_output
+    # sample from data-platform, operations
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
+
+    config = {
+        'stack_output': 'lookup:stack:dp-preprod'
+    }
+    _resolve_lookups(context, config, ['stack'])
+    mock_get_outputs_for_stack.assert_called_once_with(
+        'my_awsclient', 'dp-preprod')
+
+    assert config.get('stack_output') == stack_output
 
 
 @mock.patch('gcdt_lookups.lookups.get_base_ami',
