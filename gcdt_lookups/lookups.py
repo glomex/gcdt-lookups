@@ -2,6 +2,7 @@
 """A gcdt-plugin to do lookups."""
 from __future__ import unicode_literals, print_function
 import sys
+import json
 
 from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
@@ -68,7 +69,7 @@ def _resolve_lookups(context, config, lookups):
             else:
                 log.debug(str(e), exc_info=True)  # this adds the traceback
                 context['error'] = \
-                    'lookup for \'%s\' failed (%s)' % (k, config[k])
+                    'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
                 log.error(str(e))
                 log.error(context['error'])
 
