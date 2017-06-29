@@ -2,6 +2,7 @@
 """A gcdt-plugin to do lookups."""
 from __future__ import unicode_literals, print_function
 import sys
+import json
 
 from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
@@ -11,6 +12,7 @@ from gcdt.gcdt_logging import getLogger
 from gcdt.gcdt_awsclient import ClientError
 from gcdt.kumo_core import stack_exists
 from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
+from gcdt.utils import GracefulExit
 
 from .credstash_utils import get_secret, ItemNotFound
 
@@ -59,6 +61,8 @@ def _resolve_lookups(context, config, lookups):
                                                   stackdata, lookups)
             else:
                 _resolve_lookups_recurse(awsclient, config[k], stackdata, lookups)
+        except GracefulExit:
+            raise
         except Exception as e:
             if k in [t for t in GCDT_TOOLS if t != context['tool']]:
                 # for "other" deployment phases & tools lookups can fail
@@ -68,7 +72,7 @@ def _resolve_lookups(context, config, lookups):
             else:
                 log.debug(str(e), exc_info=True)  # this adds the traceback
                 context['error'] = \
-                    'lookup for \'%s\' failed (%s)' % (k, config[k])
+                    'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
                 log.error(str(e))
                 log.error(context['error'])
 
@@ -164,6 +168,8 @@ def lookup(params):
     context, config = params
     try:
         _resolve_lookups(context, config, config.get('lookups', []))
+    except GracefulExit:
+        raise
     except Exception as e:
         #context['error'] = e.message
         context['error'] = str(e)

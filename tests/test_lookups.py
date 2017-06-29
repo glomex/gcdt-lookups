@@ -361,7 +361,7 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
     mock_get_secret.assert_called_once_with(
         'my_awsclient', 'foo.bar.bazz')
     assert context['error'] == \
-           'lookup for \'bazz_value\' failed (lookup:secret:foo.bar.bazz)'
+           'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"'
     assert config.get('bazz_value') == \
            'lookup:secret:foo.bar.bazz'
     assert caplog.record_tuples == [
@@ -370,7 +370,7 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
          'not found, sorry'),
         ('gcdt_lookups.lookups',
          logging.ERROR,
-         'lookup for \'bazz_value\' failed (lookup:secret:foo.bar.bazz)')
+         'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"')
     ]
 
 
