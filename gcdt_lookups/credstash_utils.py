@@ -15,6 +15,7 @@ from Crypto.Hash.HMAC import HMAC
 from Crypto.Util import Counter
 
 import botocore.exceptions
+from gcdt.utils import GracefulExit
 
 
 # needed to be copied from credstash in order to make it work with awsclient
@@ -98,6 +99,8 @@ def get_secret(awsclient, name, version="",  # region=None,
         else:
             msg = "Decryption error %s" % e
         raise KmsError(msg)
+    except GracefulExit:
+        raise
     except Exception as e:
         raise KmsError("Decryption error %s" % e)
     key = kms_response['Plaintext'][:32]

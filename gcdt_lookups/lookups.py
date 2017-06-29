@@ -12,6 +12,7 @@ from gcdt.gcdt_logging import getLogger
 from gcdt.gcdt_awsclient import ClientError
 from gcdt.kumo_core import stack_exists
 from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
+from gcdt.utils import GracefulExit
 
 from .credstash_utils import get_secret, ItemNotFound
 
@@ -60,6 +61,8 @@ def _resolve_lookups(context, config, lookups):
                                                   stackdata, lookups)
             else:
                 _resolve_lookups_recurse(awsclient, config[k], stackdata, lookups)
+        except GracefulExit:
+            raise
         except Exception as e:
             if k in [t for t in GCDT_TOOLS if t != context['tool']]:
                 # for "other" deployment phases & tools lookups can fail
@@ -165,6 +168,8 @@ def lookup(params):
     context, config = params
     try:
         _resolve_lookups(context, config, config.get('lookups', []))
+    except GracefulExit:
+        raise
     except Exception as e:
         #context['error'] = e.message
         context['error'] = str(e)
