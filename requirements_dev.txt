@@ -16,4 +16,4 @@ awscli>=1.11.113
 pypandoc>=1.4
 
 # misc
-gcdt
+gcdt>=0.1.420
