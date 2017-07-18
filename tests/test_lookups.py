@@ -284,13 +284,31 @@ def test_lookup_kumo_sample(
         '_awsclient': 'my_awsclient',
         'tool': 'kumo'
     }
-    config = {u'kumo': OrderedDict([(u'cloudformation', OrderedDict([(u'StackName', u'gcdt-sample-stack'), (u'VPCId', u'lookup:stack:infra-dev:DefaultVPCId'), (u'ScaleMinCapacity', u'1'), (u'ScaleMaxCapacity', u'1'), (u'InstanceType', u't2.micro'), (u'ELBDNSName', u'supercars'), (u'BaseStackName', u'infra-dev'), (u'DefaultInstancePolicyARN', u'lookup:stack:infra-dev:DefaultInstancePolicyARN'), (u'AMI', u'lookup:baseami')]))]), u'ramuda': {u'settings_file': u'settings.json'}}
+    config = {
+        'kumo': {
+            'stack': {
+                'StackName': 'gcdt-sample-stack',
+            },
+            'parameters': {
+                'VPCId': 'vpc-88d2a7ec',
+                'ScaleMinCapacity': '1',
+                'ScaleMaxCapacity': '1',
+                'InstanceType': 't2.micro',
+                'ELBDNSName': 'supercars',
+                'BaseStackName': 'infra-dev',
+                'DefaultInstancePolicyARN':  'lookup:stack:infra-dev:DefaultInstancePolicyARN',
+                'AMI': 'lookup:baseami'
+            }
+        }
+    }
 
     _resolve_lookups(context, config, ['ssl', 'stack', 'secret', 'baseami'])
 
     assert config['kumo'] == {
-        'cloudformation': {
+        'stack': {
             'StackName': 'gcdt-sample-stack',
+        },
+        'parameters': {
             'VPCId': 'vpc-88d2a7ec',
             'ScaleMinCapacity': '1',
             'ScaleMaxCapacity': '1',
