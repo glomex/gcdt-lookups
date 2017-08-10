@@ -193,8 +193,8 @@ def _acm_lookup(awsclient, names):
         )
         if 'Certificate' in response:
             cert = response['Certificate']
-            all_names = cert['SubjectAlternativeNames']
-            if cert['DomainName'] not in all_names:
+            all_names = cert.get('SubjectAlternativeNames', [])
+            if 'DomainName' in cert and cert['DomainName'] not in all_names:
                 all_names.append(cert['DomainName'])
             certs.append({
                 'CertificateArn': cert_arn,
