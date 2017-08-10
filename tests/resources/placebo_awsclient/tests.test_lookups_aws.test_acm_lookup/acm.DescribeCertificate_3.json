@@ -1,0 +1,70 @@
+{
+    "status_code": 200, 
+    "data": {
+        "ResponseMetadata": {
+            "RetryAttempts": 0, 
+            "HTTPStatusCode": 200, 
+            "RequestId": "e73be114-7dd0-11e7-8d64-3f78c91b1dc8", 
+            "HTTPHeaders": {
+                "x-amzn-requestid": "e73be114-7dd0-11e7-8d64-3f78c91b1dc8", 
+                "date": "Thu, 10 Aug 2017 13:36:23 GMT", 
+                "content-length": "724", 
+                "content-type": "application/x-amz-json-1.1"
+            }
+        }, 
+        "Certificate": {
+            "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/c0298007-22f2-438f-a424-87ce01ce16bb", 
+            "Status": "ISSUED", 
+            "SubjectAlternativeNames": [
+                "*.glomex.com", 
+                "glomex.com"
+            ], 
+            "DomainName": "*.glomex.com", 
+            "NotBefore": {
+                "hour": 1, 
+                "__class__": "datetime", 
+                "month": 3, 
+                "second": 0, 
+                "microsecond": 0, 
+                "year": 2017, 
+                "day": 2, 
+                "minute": 0
+            }, 
+            "NotAfter": {
+                "hour": 1, 
+                "__class__": "datetime", 
+                "month": 4, 
+                "second": 59, 
+                "microsecond": 0, 
+                "year": 2018, 
+                "day": 1, 
+                "minute": 59
+            }, 
+            "ImportedAt": {
+                "hour": 15, 
+                "__class__": "datetime", 
+                "month": 3, 
+                "second": 8, 
+                "microsecond": 0, 
+                "year": 2017, 
+                "day": 17, 
+                "minute": 26
+            }, 
+            "InUseBy": [], 
+            "SignatureAlgorithm": "SHA256WITHRSA", 
+            "KeyAlgorithm": "RSA-2048", 
+            "Serial": "bf:96:0c:91:51:94:d7:65:08:98:1b:67:b8:a4:65:15", 
+            "Issuer": "COMODO CA Limited", 
+            "Type": "IMPORTED", 
+            "DomainValidationOptions": [
+                {
+                    "DomainName": "*.glomex.com"
+                }, 
+                {
+                    "DomainName": "glomex.com"
+                }
+            ], 
+            "Subject": "C=DE,PostalCode=85774,ST=Bayern,L=Unterfoehring,STREET=Medienallee 4,O=Glomex GmbH,OU=Infrastructure Services,OU=SGC SSL Wildcard,CN=*.glomex.com"
+        }
+    }
+}

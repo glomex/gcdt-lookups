@@ -1,0 +1,194 @@
+{
+    "status_code": 200, 
+    "data": {
+        "ResponseMetadata": {
+            "RetryAttempts": 0, 
+            "HTTPStatusCode": 200, 
+            "RequestId": "e6f4ed02-7dd0-11e7-8d64-3f78c91b1dc8", 
+            "HTTPHeaders": {
+                "x-amzn-requestid": "e6f4ed02-7dd0-11e7-8d64-3f78c91b1dc8", 
+                "date": "Thu, 10 Aug 2017 13:36:23 GMT", 
+                "content-length": "2640", 
+                "content-type": "application/x-amz-json-1.1"
+            }
+        }, 
+        "Certificate": {
+            "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/4ed3abe6-dc96-4f86-b5f9-eaf87ed3340d", 
+            "Status": "ISSUED", 
+            "SubjectAlternativeNames": [
+                "*.7finity.tv", 
+                "*.abc-vvs-test.glomex.com", 
+                "*.abc-vvs.glomex.com", 
+                "*.dev.ds.glomex.cloud", 
+                "*.dev.mds.glomex.cloud", 
+                "*.dev.mep.glomex.cloud", 
+                "*.dev.mes.glomex.cloud", 
+                "*.dev.pnb.glomex.cloud", 
+                "*.dev.vvs.glomex.cloud", 
+                "*.ds.glomex.cloud", 
+                "*.mds.glomex.cloud", 
+                "*.mep.glomex.cloud", 
+                "*.mes.glomex.cloud", 
+                "*.pnb.glomex.cloud", 
+                "*.prod.ds.glomex.cloud", 
+                "*.prod.mds.glomex.cloud", 
+                "*.prod.mep.glomex.cloud", 
+                "*.prod.mes.glomex.cloud", 
+                "*.prod.pnb.glomex.cloud", 
+                "*.prod.vvs.glomex.cloud", 
+                "*.qa.ds.glomex.cloud", 
+                "*.qa.mds.glomex.cloud", 
+                "*.qa.mep.glomex.cloud", 
+                "*.qa.mes.glomex.cloud", 
+                "*.qa.pnb.glomex.cloud", 
+                "*.qa.vvs.glomex.cloud", 
+                "*.stage.ds.glomex.cloud", 
+                "*.stage.mds.glomex.cloud", 
+                "*.stage.mep.glomex.cloud", 
+                "*.stage.mes.glomex.cloud", 
+                "*.stage.pnb.glomex.cloud", 
+                "*.stage.vvs.glomex.cloud", 
+                "*.vss.glomex.cloud"
+            ], 
+            "DomainName": "*.7finity.tv", 
+            "NotBefore": {
+                "hour": 1, 
+                "__class__": "datetime", 
+                "month": 11, 
+                "second": 0, 
+                "microsecond": 0, 
+                "year": 2016, 
+                "day": 30, 
+                "minute": 0
+            }, 
+            "NotAfter": {
+                "hour": 1, 
+                "__class__": "datetime", 
+                "month": 8, 
+                "second": 59, 
+                "microsecond": 0, 
+                "year": 2017, 
+                "day": 22, 
+                "minute": 59
+            }, 
+            "ImportedAt": {
+                "hour": 15, 
+                "__class__": "datetime", 
+                "month": 3, 
+                "second": 52, 
+                "microsecond": 0, 
+                "year": 2017, 
+                "day": 17, 
+                "minute": 25
+            }, 
+            "InUseBy": [], 
+            "SignatureAlgorithm": "SHA256WITHRSA", 
+            "KeyAlgorithm": "RSA-2048", 
+            "Serial": "e3:7f:c8:87:6b:d6:ae:81:bc:92:d0:60:df:22:c2:59", 
+            "Issuer": "COMODO CA Limited", 
+            "Type": "IMPORTED", 
+            "DomainValidationOptions": [
+                {
+                    "DomainName": "*.7finity.tv"
+                }, 
+                {
+                    "DomainName": "*.abc-vvs-test.glomex.com"
+                }, 
+                {
+                    "DomainName": "*.abc-vvs.glomex.com"
+                }, 
+                {
+                    "DomainName": "*.dev.ds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.dev.mds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.dev.mep.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.dev.mes.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.dev.pnb.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.dev.vvs.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.ds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.mds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.mep.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.mes.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.pnb.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.prod.ds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.prod.mds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.prod.mep.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.prod.mes.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.prod.pnb.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.prod.vvs.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.qa.ds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.qa.mds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.qa.mep.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.qa.mes.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.qa.pnb.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.qa.vvs.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.stage.ds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.stage.mds.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.stage.mep.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.stage.mes.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.stage.pnb.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.stage.vvs.glomex.cloud"
+                }, 
+                {
+                    "DomainName": "*.vss.glomex.cloud"
+                }
+            ], 
+            "Subject": "OU=Domain Control Validated,OU=PositiveSSL Multi-Domain"
+        }
+    }
+}
