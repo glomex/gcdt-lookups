@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
-from collections import OrderedDict
 import logging
 
+import maya
 import mock
-from pytest_catchlog import caplog  # fixture!
 
-from gcdt_lookups.lookups import _resolve_lookups, _identify_stacks_recurse, lookup
+from gcdt_testtools.helpers import logcapture
+from gcdt_lookups.lookups import _resolve_lookups, _identify_stacks_recurse, \
+    lookup, _find_matching_certificate, _acm_lookup
 from gcdt_lookups.credstash_utils import ItemNotFound
 from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
 
@@ -54,7 +55,8 @@ def test_stack_lookup_value(mock_stack_exists, mock_get_outputs_for_stack):
 
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
 @mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
-def test_stack_lookup_stack_output(mock_stack_exists, mock_get_outputs_for_stack):
+def test_stack_lookup_stack_output(mock_stack_exists,
+                                   mock_get_outputs_for_stack):
     # lookup:stack:<stack_name> w/o value gets us the whole stack_output
     stack_output = {
         'EC2BasicsLambdaArn':
@@ -296,7 +298,7 @@ def test_lookup_kumo_sample(
                 'InstanceType': 't2.micro',
                 'ELBDNSName': 'supercars',
                 'BaseStackName': 'infra-dev',
-                'DefaultInstancePolicyARN':  'lookup:stack:infra-dev:DefaultInstancePolicyARN',
+                'DefaultInstancePolicyARN': 'lookup:stack:infra-dev:DefaultInstancePolicyARN',
                 'AMI': 'lookup:baseami'
             }
         }
@@ -315,7 +317,7 @@ def test_lookup_kumo_sample(
             'InstanceType': 't2.micro',
             'ELBDNSName': 'supercars',
             'BaseStackName': 'infra-dev',
-            'DefaultInstancePolicyARN':  'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O',
+            'DefaultInstancePolicyARN': 'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O',
             'AMI': 'ami-91307fe2'
         }
     }
@@ -341,7 +343,8 @@ def test_secret_lookup(mock_get_secret):
 
 @mock.patch('gcdt_lookups.lookups.get_secret',
             return_value='foobar1234')
-def test_secret_lookup_continue_if_not_found(mock_get_secret, caplog):
+def test_secret_lookup_continue_if_not_found(mock_get_secret, logcapture):
+    logcapture.level = logging.INFO
     mock_get_secret.side_effect = ItemNotFound('not found, sorry')
     context = {
         '_awsclient': 'my_awsclient',
@@ -356,16 +359,17 @@ def test_secret_lookup_continue_if_not_found(mock_get_secret, caplog):
 
     assert config.get('bazz_value') == \
            'lookup:secret:foo.bar.bazz:CONTINUE_IF_NOT_FOUND'
-    assert caplog.record_tuples == [
-        ('gcdt_lookups.lookups',
-         logging.WARNING,
-         'lookup:secret \'foo.bar.bazz\' not found in credstash!'),
-    ]
+
+    records = list(logcapture.actual())
+    assert records[0][1] == 'WARNING'
+    assert records[0][2] == \
+           'lookup:secret \'foo.bar.bazz\' not found in credstash!'
 
 
 @mock.patch('gcdt_lookups.lookups.get_secret',
             return_value='foobar1234')
-def test_secret_lookup_error_case(mock_get_secret, caplog):
+def test_secret_lookup_error_case(mock_get_secret, logcapture):
+    logcapture.level = logging.INFO
     mock_get_secret.side_effect = ItemNotFound('not found, sorry')
     context = {
         '_awsclient': 'my_awsclient',
@@ -379,19 +383,78 @@ def test_secret_lookup_error_case(mock_get_secret, caplog):
     mock_get_secret.assert_called_once_with(
         'my_awsclient', 'foo.bar.bazz')
     assert context['error'] == \
-           'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"'
+        'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"'
     assert config.get('bazz_value') == \
-           'lookup:secret:foo.bar.bazz'
-    assert caplog.record_tuples == [
-        ('gcdt_lookups.lookups',
-         logging.ERROR,
-         'not found, sorry'),
-        ('gcdt_lookups.lookups',
-         logging.ERROR,
-         'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"')
-    ]
+        'lookup:secret:foo.bar.bazz'
+
+    assert context['error'] == \
+        'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"'
+    records = list(logcapture.actual())
+    assert records[0][1] == 'ERROR'
+    assert records[0][2] == 'not found, sorry'
 
 
 def test_ami_accountid_config():
-    ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
+    ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups'][
+        'ami_accountid']
     assert ami_accountid == '569909643510'
+
+
+def test_find_matching_certificate():
+    names = ['infra.glomex.cloud', '*.infra.glomex.cloud']
+    expected = 'arn:aws:acm:eu-west-1:123456789012:certificate/klmno-123'
+
+    certs = [
+        {
+            'CertificateArn': 'arn:aws:acm:eu-west-1:123456789012:certificate/abcde-123',
+            'Names': ['*.infra.glomex.cloud', 'infra.glomex.cloud',
+                      '*.infra.glomex.cloud'],
+            'NotAfter': maya.now().add(months=1).datetime()
+        },
+        {
+            'CertificateArn': 'arn:aws:acm:eu-west-1:123456789012:certificate/fghij-123',
+            'Names': ['*.abc-vvs-test.glomex.com',
+                      '*.abc-vvs.glomex.com', '*.dev.ds.glomex.cloud',
+                      '*.dev.mds.glomex.cloud', '*.dev.mep.glomex.cloud',
+                      '*.dev.mes.glomex.cloud', '*.dev.pnb.glomex.cloud',
+                      '*.dev.vvs.glomex.cloud', '*.ds.glomex.cloud'],
+            'NotAfter': maya.now().add(months=10).datetime()
+        },
+        {
+            'CertificateArn': 'arn:aws:acm:eu-west-1:123456789012:certificate/klmno-123',
+            'Names': ['*.infra.glomex.cloud', 'infra.glomex.cloud',
+                      '*.infra.glomex.cloud'],
+            'NotAfter': maya.now().add(months=20).datetime()
+        },
+    ]
+    assert _find_matching_certificate(certs, names) == expected
+
+
+def test_find_matching_certificate_not_found():
+    logcapture.level = logging.INFO
+    names = ['unknown.glomex.cloud', '*.infra.glomex.cloud']
+
+    certs = [
+        {
+            'CertificateArn': 'arn:aws:acm:eu-west-1:123456789012:certificate/abcde-123',
+            'Names': ['*.infra.glomex.cloud', 'infra.glomex.cloud',
+                      '*.infra.glomex.cloud'],
+            'NotAfter': maya.now().add(months=1).datetime()
+        },
+        {
+            'CertificateArn': 'arn:aws:acm:eu-west-1:123456789012:certificate/fghij-123',
+            'Names': ['*.abc-vvs-test.glomex.com',
+                      '*.abc-vvs.glomex.com', '*.dev.ds.glomex.cloud',
+                      '*.dev.mds.glomex.cloud', '*.dev.mep.glomex.cloud',
+                      '*.dev.mes.glomex.cloud', '*.dev.pnb.glomex.cloud',
+                      '*.dev.vvs.glomex.cloud', '*.ds.glomex.cloud'],
+            'NotAfter': maya.now().add(months=10).datetime()
+        },
+        {
+            'CertificateArn': 'arn:aws:acm:eu-west-1:123456789012:certificate/klmno-123',
+            'Names': ['*.infra.glomex.cloud', 'infra.glomex.cloud',
+                      '*.infra.glomex.cloud'],
+            'NotAfter': maya.now().add(months=20).datetime()
+        },
+    ]
+    assert _find_matching_certificate(certs, names) is None
