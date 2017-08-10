@@ -17,4 +17,3 @@ pypandoc>=1.4
 
 # misc
 gcdt>=0.1.420
-gcdt-bundler  # TODO remove me!!
