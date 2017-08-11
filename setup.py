@@ -23,7 +23,7 @@ dependency_links = [x.strip().replace('git+', '') for x in all_reqs if 'git+' no
 
 setup(
     name='gcdt-lookups',
-    version='0.0.18',
+    version='0.0.19',
     description='Plugin (gcdt-lookups) for gcdt',
     long_description=long_description,
     license='MIT',
