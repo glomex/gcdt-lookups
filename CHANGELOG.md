@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### [0.0.19] - 2017-08-10
 #### Added
-- acm certificate lookup (#359)
+- acm certificate lookup (#359) 
 ### Deprecated
 - baseami lookup, use secret lookup instead
 
