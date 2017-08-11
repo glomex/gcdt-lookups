@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+### [0.0.19] - 2017-08-10
+#### Added
+- acm certificate lookup (#359) 
+### Deprecated
+- baseami lookup, use secret lookup instead
+
 ### [0.0.18] - 2017-07-18
 ### Deprecated
 - kumo cloudformation config section, use "parameters" & "stack" instead (#337)

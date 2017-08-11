@@ -74,7 +74,7 @@ def _resolve_lookups(context, config, lookups):
                 context['error'] = \
                     'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
                 log.error(str(e))
-                log.error(context['error'])
+                #log.error(context['error'])
 
 
 def _resolve_lookups_recurse(awsclient, config, stacks, lookups):
@@ -85,7 +85,6 @@ def _resolve_lookups_recurse(awsclient, config, stacks, lookups):
                 _resolve_lookups_recurse(awsclient, value, stacks, lookups)
             elif isinstance(value, list):
                 for i, elem in enumerate(value):
-                    #_resolve_lookups_recurse(awsclient, elem, stacks, lookups)
                     if isinstance(elem, basestring):
                         value[i] = _resolve_single_value(awsclient, elem,
                                                          stacks, lookups)
@@ -124,8 +123,16 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
                     else:
                         raise e
             elif splits[1] == 'baseami' and 'baseami' in lookups:
+                # DEPRECATED baseami lookup (21.07.2017)
                 ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
                 return get_base_ami(awsclient, [ami_accountid])
+            elif splits[1] == 'acm' and 'acm' in lookups:
+                cert = _acm_lookup(awsclient, splits[2:])
+                if cert:
+                    return cert
+                else:
+                    raise Exception('no ACM certificate matches your query, sorry')
+
     return value
 
 
@@ -160,6 +167,82 @@ def _identify_stacks_recurse(config, lookups):
     return set(stacklist)
 
 
+def _acm_lookup(awsclient, names):
+    """Execute the actual ACM lookup
+
+    :param awsclient:
+    :param names: list of fqdn and hosted zones
+    :return:
+    """
+    client_acm = awsclient.get_client('acm')
+
+    # get all certs in issued state
+    response = client_acm.list_certificates(
+        CertificateStatuses=['ISSUED'],
+        MaxItems=200
+    )
+    # list of 'CertificateArn's
+    issued_list = [e['CertificateArn'] for e in response['CertificateSummaryList']]
+    log.debug('found %d issued certificates', len(issued_list))
+
+    # collect the cert details
+    certs = []
+    for cert_arn in issued_list:
+        response = client_acm.describe_certificate(
+            CertificateArn=cert_arn
+        )
+        if 'Certificate' in response:
+            cert = response['Certificate']
+            all_names = cert.get('SubjectAlternativeNames', [])
+            if 'DomainName' in cert and cert['DomainName'] not in all_names:
+                all_names.append(cert['DomainName'])
+            certs.append({
+                'CertificateArn': cert_arn,
+                'Names': all_names,
+                'NotAfter': cert['NotAfter']
+            })
+
+    return _find_matching_certificate(certs, names)
+
+
+def _find_matching_certificate(certs, names):
+    """helper to find the first matching certificate with the most distant expiry date
+
+    :param certs: list of certs
+    :param names: list of names
+    :return: arn if found
+    """
+
+    # sort by 'NotAfter' to get `most distant expiry date` first
+    certs_ordered = sorted(certs, key=lambda k: k['NotAfter'], reverse=True)
+
+    # take the first cert that fits our search criteria
+    for cert in certs_ordered:
+        matches = True
+        for name in names:
+            if name.startswith('*.'):
+                if name in cert['Names']:
+                    continue
+                else:
+                    matches = False
+                    break
+            else:
+                if name in cert['Names']:
+                    continue
+                elif '*.' + name.split('.', 1)[1] in cert['Names']:
+                    # host name contained in wildcard
+                    continue
+                else:
+                    matches = False
+                    break
+        if matches:
+            # found it!
+            return cert['CertificateArn']
+
+    # no certificate matches your query, sorry
+    return
+
+
 def lookup(params):
     """lookups.
     :param params: context, config (context - the _awsclient, etc..
@@ -171,7 +254,6 @@ def lookup(params):
     except GracefulExit:
         raise
     except Exception as e:
-        #context['error'] = e.message
         context['error'] = str(e)
 
 
