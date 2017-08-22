@@ -3,10 +3,6 @@
     "data": {
         "CertificateSummaryList": [
             {
-                "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/4ed3abe6-dc96-4f86-b5f9-eaf87ed3340d", 
-                "DomainName": "*.7finity.tv"
-            }, 
-            {
                 "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/c0d9f80e-b28b-4714-aed0-66554d366701", 
                 "DomainName": "*.infra.glomex.cloud"
             }, 
@@ -26,11 +22,11 @@
         "ResponseMetadata": {
             "RetryAttempts": 0, 
             "HTTPStatusCode": 200, 
-            "RequestId": "e6ea3ea1-7dd0-11e7-8d64-3f78c91b1dc8", 
+            "RequestId": "645b1530-8730-11e7-b78c-091caa0d59da", 
             "HTTPHeaders": {
-                "x-amzn-requestid": "e6ea3ea1-7dd0-11e7-8d64-3f78c91b1dc8", 
-                "date": "Thu, 10 Aug 2017 13:36:23 GMT", 
-                "content-length": "722", 
+                "x-amzn-requestid": "645b1530-8730-11e7-b78c-091caa0d59da", 
+                "date": "Tue, 22 Aug 2017 11:52:36 GMT", 
+                "content-length": "589", 
                 "content-type": "application/x-amz-json-1.1"
             }
         }

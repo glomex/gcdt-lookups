@@ -4,16 +4,16 @@
         "ResponseMetadata": {
             "RetryAttempts": 0, 
             "HTTPStatusCode": 200, 
-            "RequestId": "6466fc11-8730-11e7-b78c-091caa0d59da", 
+            "RequestId": "654d8b20-8730-11e7-b923-27ca056d6b32", 
             "HTTPHeaders": {
-                "x-amzn-requestid": "6466fc11-8730-11e7-b78c-091caa0d59da", 
-                "date": "Tue, 22 Aug 2017 11:52:37 GMT", 
-                "content-length": "771", 
+                "x-amzn-requestid": "654d8b20-8730-11e7-b923-27ca056d6b32", 
+                "date": "Tue, 22 Aug 2017 11:52:38 GMT", 
+                "content-length": "834", 
                 "content-type": "application/x-amz-json-1.1"
             }
         }, 
         "Certificate": {
-            "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/c0d9f80e-b28b-4714-aed0-66554d366701", 
+            "CertificateArn": "arn:aws:acm:us-east-1:420189626185:certificate/1dafd21d-2e5d-458d-8f87-498f2b8290bc", 
             "Status": "ISSUED", 
             "SubjectAlternativeNames": [
                 "*.infra.glomex.cloud", 
@@ -44,13 +44,15 @@
                 "hour": 15, 
                 "__class__": "datetime", 
                 "month": 3, 
-                "second": 0, 
+                "second": 46, 
                 "microsecond": 0, 
                 "year": 2017, 
                 "day": 17, 
-                "minute": 26
+                "minute": 20
             }, 
-            "InUseBy": [], 
+            "InUseBy": [
+                "arn:aws:cloudfront::631144002099:distribution/E2O2SFYZGF5LI4"
+            ], 
             "SignatureAlgorithm": "SHA256WITHRSA", 
             "KeyAlgorithm": "RSA-2048", 
             "Serial": "b5:53:f5:13:d4:fc:24:00:d1:4d:10:f7:af:b6:76:d4", 

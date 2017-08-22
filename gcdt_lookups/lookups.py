@@ -10,6 +10,7 @@ from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack, \
     get_base_ami
 from gcdt.gcdt_logging import getLogger
 from gcdt.gcdt_awsclient import ClientError
+#from gcdt.utils import stack_exists
 from gcdt.kumo_core import stack_exists
 from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
 from gcdt.utils import GracefulExit
@@ -57,10 +58,12 @@ def _resolve_lookups(context, config, lookups):
     for k in config.keys():
         try:
             if isinstance(config[k], basestring):
+                # Don't think we have many of these??!
                 config[k] = _resolve_single_value(awsclient, config[k],
                                                   stackdata, lookups)
             else:
-                _resolve_lookups_recurse(awsclient, config[k], stackdata, lookups)
+                _resolve_lookups_recurse(
+                    awsclient, config[k], stackdata, lookups, k == 'yugen')
         except GracefulExit:
             raise
         except Exception as e:
@@ -77,25 +80,27 @@ def _resolve_lookups(context, config, lookups):
                 #log.error(context['error'])
 
 
-def _resolve_lookups_recurse(awsclient, config, stacks, lookups):
+def _resolve_lookups_recurse(awsclient, config, stacks, lookups, is_yugen=False):
     # resolve inplace
     if isinstance(config, dict):
         for key, value in config.items():
             if isinstance(value, dict):
-                _resolve_lookups_recurse(awsclient, value, stacks, lookups)
+                _resolve_lookups_recurse(
+                    awsclient, value, stacks, lookups, is_yugen)
             elif isinstance(value, list):
                 for i, elem in enumerate(value):
                     if isinstance(elem, basestring):
-                        value[i] = _resolve_single_value(awsclient, elem,
-                                                         stacks, lookups)
+                        value[i] = _resolve_single_value(
+                            awsclient, elem, stacks, lookups, is_yugen)
                     else:
-                        _resolve_lookups_recurse(awsclient, elem, stacks, lookups)
+                        _resolve_lookups_recurse(
+                            awsclient, elem, stacks, lookups, is_yugen)
             else:
-                config[key] = _resolve_single_value(awsclient, value,
-                                                    stacks, lookups)
+                config[key] = _resolve_single_value(
+                    awsclient, value, stacks, lookups, is_yugen)
 
 
-def _resolve_single_value(awsclient, value, stacks, lookups):
+def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
     # split lookup in elements and resolve the lookup using servicediscovery
     if isinstance(value, basestring):
         if value.startswith('lookup:'):
@@ -127,7 +132,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups):
                 ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
                 return get_base_ami(awsclient, [ami_accountid])
             elif splits[1] == 'acm' and 'acm' in lookups:
-                cert = _acm_lookup(awsclient, splits[2:])
+                cert = _acm_lookup(awsclient, splits[2:], is_yugen)
                 if cert:
                     return cert
                 else:
@@ -167,14 +172,20 @@ def _identify_stacks_recurse(config, lookups):
     return set(stacklist)
 
 
-def _acm_lookup(awsclient, names):
+def _acm_lookup(awsclient, names, is_yugen=False):
     """Execute the actual ACM lookup
 
     :param awsclient:
     :param names: list of fqdn and hosted zones
+    :param is_yugen: for API Gateway we need to lookup the certs from us-east-1
     :return:
     """
-    client_acm = awsclient.get_client('acm')
+    if is_yugen:
+        # for API Gateway we need to lookup the certs from us-east-1
+        # set region to `us-east-1`
+        client_acm = awsclient.get_client('acm', 'us-east-1')
+    else:
+        client_acm = awsclient.get_client('acm')
 
     # get all certs in issued state
     response = client_acm.list_certificates(
