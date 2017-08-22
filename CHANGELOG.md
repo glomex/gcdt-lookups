@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
+## [0.0.20] - 2017-08-22 
+### Added
+- use 'us-east-1' in acm certificate lookup for yugen (#367)
+
 ### [0.0.19] - 2017-08-10
 #### Added
 - acm certificate lookup (#359) 

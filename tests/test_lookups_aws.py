@@ -16,4 +16,16 @@ def test_acm_lookup(awsclient):
     # * if we deploy new certificates this might break
     # * we do not want to have all the certificate details in github
     host_list = ['*.infra.glomex.cloud', '*.dev.infra.glomex.cloud']
-    assert _acm_lookup(awsclient, host_list) is not None
+    cert_arn = _acm_lookup(awsclient, host_list)
+    assert cert_arn is not None
+    assert cert_arn.split(':')[3] == 'eu-west-1'
+
+
+@pytest.mark.aws
+@check_preconditions
+def test_acm_lookup_is_yugen(awsclient):
+    # for API Gateway certs need to come from us-east-1
+    host_list = ['*.infra.glomex.cloud', '*.dev.infra.glomex.cloud']
+    cert_arn = _acm_lookup(awsclient, host_list, True)
+    assert cert_arn is not None
+    assert cert_arn.split(':')[3] == 'us-east-1'
