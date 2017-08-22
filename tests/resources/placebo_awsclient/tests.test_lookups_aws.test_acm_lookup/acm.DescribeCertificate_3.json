@@ -4,67 +4,84 @@
         "ResponseMetadata": {
             "RetryAttempts": 0, 
             "HTTPStatusCode": 200, 
-            "RequestId": "e73be114-7dd0-11e7-8d64-3f78c91b1dc8", 
+            "RequestId": "648d6fd3-8730-11e7-b78c-091caa0d59da", 
             "HTTPHeaders": {
-                "x-amzn-requestid": "e73be114-7dd0-11e7-8d64-3f78c91b1dc8", 
-                "date": "Thu, 10 Aug 2017 13:36:23 GMT", 
-                "content-length": "724", 
+                "x-amzn-requestid": "648d6fd3-8730-11e7-b78c-091caa0d59da", 
+                "date": "Tue, 22 Aug 2017 11:52:37 GMT", 
+                "content-length": "926", 
                 "content-type": "application/x-amz-json-1.1"
             }
         }, 
         "Certificate": {
-            "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/c0298007-22f2-438f-a424-87ce01ce16bb", 
+            "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/32908298-2885-4af5-ada9-444c0c8105ea", 
             "Status": "ISSUED", 
             "SubjectAlternativeNames": [
-                "*.glomex.com", 
-                "glomex.com"
+                "*.dev.infra.glomex.cloud"
             ], 
-            "DomainName": "*.glomex.com", 
+            "DomainName": "*.dev.infra.glomex.cloud", 
             "NotBefore": {
-                "hour": 1, 
+                "hour": 2, 
                 "__class__": "datetime", 
                 "month": 3, 
                 "second": 0, 
                 "microsecond": 0, 
                 "year": 2017, 
-                "day": 2, 
+                "day": 28, 
                 "minute": 0
             }, 
             "NotAfter": {
-                "hour": 1, 
+                "hour": 14, 
                 "__class__": "datetime", 
                 "month": 4, 
-                "second": 59, 
+                "second": 0, 
                 "microsecond": 0, 
                 "year": 2018, 
-                "day": 1, 
-                "minute": 59
+                "day": 28, 
+                "minute": 0
             }, 
-            "ImportedAt": {
-                "hour": 15, 
+            "KeyAlgorithm": "RSA-2048", 
+            "InUseBy": [
+                "arn:aws:elasticloadbalancing:eu-west-1:420189626185:loadbalancer/infra-rep-ElasticL-8WA22EK3JZ6R"
+            ], 
+            "SignatureAlgorithm": "SHA256WITHRSA", 
+            "CreatedAt": {
+                "hour": 10, 
                 "__class__": "datetime", 
                 "month": 3, 
-                "second": 8, 
+                "second": 7, 
                 "microsecond": 0, 
                 "year": 2017, 
-                "day": 17, 
-                "minute": 26
+                "day": 28, 
+                "minute": 25
             }, 
-            "InUseBy": [], 
-            "SignatureAlgorithm": "SHA256WITHRSA", 
-            "KeyAlgorithm": "RSA-2048", 
-            "Serial": "bf:96:0c:91:51:94:d7:65:08:98:1b:67:b8:a4:65:15", 
-            "Issuer": "COMODO CA Limited", 
-            "Type": "IMPORTED", 
+            "IssuedAt": {
+                "hour": 10, 
+                "__class__": "datetime", 
+                "month": 3, 
+                "second": 56, 
+                "microsecond": 0, 
+                "year": 2017, 
+                "day": 28, 
+                "minute": 25
+            }, 
+            "Serial": "06:e7:dd:f9:4f:83:45:8c:00:72:12:7b:9c:1b:87:59", 
+            "Issuer": "Amazon", 
+            "Type": "AMAZON_ISSUED", 
             "DomainValidationOptions": [
                 {
-                    "DomainName": "*.glomex.com"
-                }, 
-                {
-                    "DomainName": "glomex.com"
+                    "ValidationEmails": [
+                        "hostmaster@glomex.cloud", 
+                        "webmaster@glomex.cloud", 
+                        "postmaster@glomex.cloud", 
+                        "admin@glomex.cloud", 
+                        "administrator@glomex.cloud"
+                    ], 
+                    "ValidationStatus": "SUCCESS", 
+                    "ValidationDomain": "glomex.cloud", 
+                    "DomainName": "*.dev.infra.glomex.cloud"
                 }
             ], 
-            "Subject": "C=DE,PostalCode=85774,ST=Bayern,L=Unterfoehring,STREET=Medienallee 4,O=Glomex GmbH,OU=Infrastructure Services,OU=SGC SSL Wildcard,CN=*.glomex.com"
+            "Subject": "CN=*.dev.infra.glomex.cloud"
         }
     }
 }

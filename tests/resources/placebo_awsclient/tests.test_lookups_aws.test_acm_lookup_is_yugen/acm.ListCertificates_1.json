@@ -1,0 +1,30 @@
+{
+    "status_code": 200, 
+    "data": {
+        "CertificateSummaryList": [
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:420189626185:certificate/1dafd21d-2e5d-458d-8f87-498f2b8290bc", 
+                "DomainName": "*.infra.glomex.cloud"
+            }, 
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:420189626185:certificate/42fc53a2-d1b7-4963-9c94-ddd1905d309b", 
+                "DomainName": "*.glomex.com"
+            }, 
+            {
+                "CertificateArn": "arn:aws:acm:us-east-1:420189626185:certificate/56796778-cda3-413b-90c1-bcae0aee78da", 
+                "DomainName": "*.dev.ds.glomex.cloud"
+            }
+        ], 
+        "ResponseMetadata": {
+            "RetryAttempts": 0, 
+            "HTTPStatusCode": 200, 
+            "RequestId": "6536599f-8730-11e7-b923-27ca056d6b32", 
+            "HTTPHeaders": {
+                "x-amzn-requestid": "6536599f-8730-11e7-b923-27ca056d6b32", 
+                "date": "Tue, 22 Aug 2017 11:52:38 GMT", 
+                "content-length": "444", 
+                "content-type": "application/x-amz-json-1.1"
+            }
+        }
+    }
+}

@@ -4,16 +4,16 @@
         "ResponseMetadata": {
             "RetryAttempts": 0, 
             "HTTPStatusCode": 200, 
-            "RequestId": "e7590606-7dd0-11e7-8d64-3f78c91b1dc8", 
+            "RequestId": "65856402-8730-11e7-b923-27ca056d6b32", 
             "HTTPHeaders": {
-                "x-amzn-requestid": "e7590606-7dd0-11e7-8d64-3f78c91b1dc8", 
-                "date": "Thu, 10 Aug 2017 13:36:23 GMT", 
+                "x-amzn-requestid": "65856402-8730-11e7-b923-27ca056d6b32", 
+                "date": "Tue, 22 Aug 2017 11:52:38 GMT", 
                 "content-length": "1906", 
                 "content-type": "application/x-amz-json-1.1"
             }
         }, 
         "Certificate": {
-            "CertificateArn": "arn:aws:acm:eu-west-1:420189626185:certificate/f01d5d41-bfa6-423f-af99-1b982e1c0856", 
+            "CertificateArn": "arn:aws:acm:us-east-1:420189626185:certificate/56796778-cda3-413b-90c1-bcae0aee78da", 
             "Status": "ISSUED", 
             "SubjectAlternativeNames": [
                 "*.dev.ds.glomex.cloud", 
@@ -64,7 +64,7 @@
                 "hour": 8, 
                 "__class__": "datetime", 
                 "month": 8, 
-                "second": 2, 
+                "second": 4, 
                 "microsecond": 0, 
                 "year": 2017, 
                 "day": 7, 
