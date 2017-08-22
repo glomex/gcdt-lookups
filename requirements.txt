@@ -1,5 +1,5 @@
 # Dependencies have to be in sync with other packages (gcdt, glomex-credstash)
-gcdt>=0.1.420
+gcdt>=0.1.437
 pycrypto==2.6.1
 
 # Other dependencies
