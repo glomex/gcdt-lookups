@@ -81,7 +81,7 @@ def _resolve_lookups(context, config, lookups):
                 context['error'] = \
                     'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
                 log.error(str(e))
-                #log.error(context['error'])
+                log.error(context['error'])
 
 
 def _resolve_lookups_recurse(awsclient, config, stacks, lookups, is_yugen=False):
@@ -271,6 +271,7 @@ def lookup(params):
         raise
     except Exception as e:
         context['error'] = str(e)
+        log.error(context['error'])
 
 
 def incept_defaults(params):
