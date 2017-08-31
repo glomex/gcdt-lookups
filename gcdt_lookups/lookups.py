@@ -3,17 +3,21 @@
 from __future__ import unicode_literals, print_function
 import sys
 import json
+from copy import deepcopy
 
 from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
-from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack, \
-    get_base_ami
+from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack
+#    get_base_ami
 from gcdt.gcdt_logging import getLogger
 from gcdt.gcdt_awsclient import ClientError
-#from gcdt.utils import stack_exists
-from gcdt.kumo_core import stack_exists
-from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
-from gcdt.utils import GracefulExit
+from gcdt.utils import stack_exists, get_plugin_defaults
+#from gcdt.kumo_core import stack_exists
+from gcdt.utils import GracefulExit, dict_merge
+from gcdt.gcdt_openapi import get_openapi_defaults, validate_tool_config, \
+    incept_defaults_helper, validate_config_helper
+from . import read_openapi
+
 
 from .credstash_utils import get_secret, ItemNotFound
 
@@ -127,10 +131,10 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
                         log.warning('lookup:secret \'%s\' not found in credstash!', splits[2])
                     else:
                         raise e
-            elif splits[1] == 'baseami' and 'baseami' in lookups:
-                # DEPRECATED baseami lookup (21.07.2017)
-                ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
-                return get_base_ami(awsclient, [ami_accountid])
+            #elif splits[1] == 'baseami' and 'baseami' in lookups:
+            #    # DEPRECATED baseami lookup (21.07.2017)
+            #    ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
+            #    return get_base_ami(awsclient, [ami_accountid])
             elif splits[1] == 'acm' and 'acm' in lookups:
                 cert = _acm_lookup(awsclient, splits[2:], is_yugen)
                 if cert:
@@ -261,19 +265,40 @@ def lookup(params):
     """
     context, config = params
     try:
-        _resolve_lookups(context, config, config.get('lookups', []))
+        defaults = get_plugin_defaults(config, 'gcdt_lookups')
+        _resolve_lookups(context, config, defaults.get('lookups', []))
     except GracefulExit:
         raise
     except Exception as e:
         context['error'] = str(e)
 
 
+def incept_defaults(params):
+    """incept defaults where needed (after config is read from file).
+    :param params: context, config (context - the _awsclient, etc..
+                   config - The stack details, etc..)
+    """
+    incept_defaults_helper(params, read_openapi(), 'gcdt_lookups', True)
+
+
+def validate_config(params):
+    """validate the config after lookups.
+    :param params: context, config (context - the _awsclient, etc..
+                   config - The stack details, etc..)
+    """
+    validate_config_helper(params, read_openapi(), 'gcdt_lookups', True)
+
+
 def register():
     """Please be very specific about when your plugin needs to run and why.
     E.g. run the sample stuff after at the very beginning of the lifecycle
     """
+    gcdt_signals.config_read_finalized.connect(incept_defaults)
+    gcdt_signals.config_validation_init.connect(validate_config)
     gcdt_signals.lookup_init.connect(lookup)
 
 
 def deregister():
+    gcdt_signals.config_read_finalized.disconnect(incept_defaults)
+    gcdt_signals.config_validation_init.disconnect(validate_config)
     gcdt_signals.lookup_init.disconnect(lookup)

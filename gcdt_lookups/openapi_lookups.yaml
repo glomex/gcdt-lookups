@@ -1,0 +1,56 @@
+swagger: '2.0'
+info:
+  title: gcdt-lookups plugin config
+  description: "Documentation of the config file format for `gcdt-lookups` (a gcdt plugin). Note: if you want to add to the documentation please edit the openapi_lookups.yaml file"
+  version: 0.0.18
+
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description:  success
+
+definitions:
+  gcdt_lookups:
+    description: 'The plugin config is organized into the following structure:'
+    type: object
+    properties:
+      defaults:
+        description: 'finetune gcdt tool lifecycle (override at own risk)'
+        $ref: '#/definitions/defaults'
+    required:
+    - defaults
+
+  defaults:
+    type: object
+    description: 'Default properties to finetune gcdt tool lifecycle (override at own risk).'
+    properties:
+      validate:
+        type: boolean
+        description: 'use this if you need to switch off config validation.'
+        default: true
+      lookups:
+        description: 'define which lookups can be used for this deployment'
+        type: array
+        items:
+          $ref: '#/definitions/lookupItem'
+        default: ['secret', 'stack', 'acm']
+    required:
+    - validate
+    - lookups
+    additionalProperties: false
+
+  lookupItem:
+    type: string
+    pattern: 'secret|stack|acm'
+
+  top:
+    type: object
+    properties:
+      plugins:
+        type: object
+        properties:
+          gcdt_lookups:
+            type: object
+            $ref: '#/definitions/gcdt_lookups'

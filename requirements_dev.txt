@@ -2,10 +2,10 @@
 # please list all dependencies necessary to test and build this package
 
 # test-tools
-pytest>=3.0.6
-pytest-cov>=2.4.0
+#pytest>=3.0.6
+#pytest-cov>=2.4.0
 mock==2.0.0
-pytest-catchlog>=1.2.2
+#pytest-catchlog>=1.2.2
 
 # build-tools
 setuptools>=36.0.1
@@ -16,4 +16,3 @@ awscli>=1.11.113
 pypandoc>=1.4
 
 # misc
-#gcdt-kumo>=0.2.0

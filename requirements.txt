@@ -1,5 +1,6 @@
 # Dependencies have to be in sync with other packages (gcdt, glomex-credstash)
-gcdt>=0.1.437  # need multi-region AWSClient
+#gcdt>=0.1.437  # need multi-region AWSClient
+gcdt-kumo>=0.2.0
 pycrypto==2.6.1
 
 # Other dependencies
