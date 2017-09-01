@@ -131,10 +131,6 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
                         log.warning('lookup:secret \'%s\' not found in credstash!', splits[2])
                     else:
                         raise e
-            #elif splits[1] == 'baseami' and 'baseami' in lookups:
-            #    # DEPRECATED baseami lookup (21.07.2017)
-            #    ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
-            #    return get_base_ami(awsclient, [ami_accountid])
             elif splits[1] == 'acm' and 'acm' in lookups:
                 cert = _acm_lookup(awsclient, splits[2:], is_yugen)
                 if cert:

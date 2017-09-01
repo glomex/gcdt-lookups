@@ -9,7 +9,6 @@ from gcdt_testtools.helpers import logcapture
 from gcdt_lookups.lookups import _resolve_lookups, _identify_stacks_recurse, \
     lookup, _find_matching_certificate, _acm_lookup
 from gcdt_lookups.credstash_utils import ItemNotFound
-from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
 
 
 def test_identify_stacks_recurse():
@@ -77,24 +76,6 @@ def test_stack_lookup_stack_output(mock_stack_exists,
         'my_awsclient', 'dp-preprod')
 
     assert config.get('stack_output') == stack_output
-
-
-@mock.patch('gcdt_lookups.lookups.get_base_ami',
-            return_value='img-123456')
-def test_baseami_lookup(mock_get_base_ami):
-    # sample from mes-ftp, ftpbackend
-    context = {
-        '_awsclient': 'my_awsclient',
-        'tool': 'kumo'
-    }
-    config = {
-        'BaseAMIID': 'lookup:baseami'
-    }
-    _resolve_lookups(context, config, ['baseami'])
-    mock_get_base_ami.assert_called_once_with(
-        'my_awsclient', ['569909643510'])
-
-    assert config.get('BaseAMIID') == 'img-123456'
 
 
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
@@ -269,14 +250,14 @@ def test_lookup_selective_stack_lookup_limit_to_ssl_lookup(
            'lookup:stack:dp-preprod:EC2BasicsLambdaArn'
 
 
-@mock.patch('gcdt_lookups.lookups.get_base_ami')
+#@mock.patch('gcdt_lookups.lookups.get_base_ami')
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
 @mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
 def test_lookup_kumo_sample(
         mock_stack_exists,
-        mock_get_outputs_for_stack,
-        mock_get_base_ami):
-    mock_get_base_ami.return_value = 'ami-91307fe2'
+        mock_get_outputs_for_stack
+        ):
+    #mock_get_base_ami.return_value = 'ami-91307fe2'
     mock_get_outputs_for_stack.return_value = {
         'DefaultInstancePolicyARN': 'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O',
         'DefaultVPCId': 'vpc-88d2a7ec',
@@ -298,8 +279,8 @@ def test_lookup_kumo_sample(
                 'InstanceType': 't2.micro',
                 'ELBDNSName': 'supercars',
                 'BaseStackName': 'infra-dev',
-                'DefaultInstancePolicyARN': 'lookup:stack:infra-dev:DefaultInstancePolicyARN',
-                'AMI': 'lookup:baseami'
+                'DefaultInstancePolicyARN': 'lookup:stack:infra-dev:DefaultInstancePolicyARN'
+                #'AMI': 'lookup:baseami'
             }
         }
     }
@@ -317,8 +298,7 @@ def test_lookup_kumo_sample(
             'InstanceType': 't2.micro',
             'ELBDNSName': 'supercars',
             'BaseStackName': 'infra-dev',
-            'DefaultInstancePolicyARN': 'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O',
-            'AMI': 'ami-91307fe2'
+            'DefaultInstancePolicyARN': 'arn:aws:iam::420189626185:policy/7f-managed/infra-dev-Defaultmanagedinstancepolicy-9G6XX1YXZI5O'
         }
     }
 
@@ -376,7 +356,14 @@ def test_secret_lookup_error_case(mock_get_secret, logcapture):
         'tool': 'ramuda'
     }
     config = {
-        'lookups': ['secret'],
+        'plugins': {
+            "gcdt_lookups": {
+                "defaults": {
+                    "validate": True,
+                    "lookups": ["secret"]
+                }
+            }
+        },
         'bazz_value': 'lookup:secret:foo.bar.bazz'
     }
     lookup((context, config))
@@ -392,12 +379,6 @@ def test_secret_lookup_error_case(mock_get_secret, logcapture):
     records = list(logcapture.actual())
     assert records[0][1] == 'ERROR'
     assert records[0][2] == 'not found, sorry'
-
-
-def test_ami_accountid_config():
-    ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups'][
-        'ami_accountid']
-    assert ami_accountid == '569909643510'
 
 
 def test_find_matching_certificate():
