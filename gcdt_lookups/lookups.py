@@ -16,6 +16,7 @@ from gcdt.utils import stack_exists, get_plugin_defaults
 from gcdt.utils import GracefulExit, dict_merge
 from gcdt.gcdt_openapi import get_openapi_defaults, validate_tool_config, \
     incept_defaults_helper, validate_config_helper
+from gcdt.gcdt_exceptions import GcdtError
 from . import read_openapi
 
 
@@ -77,11 +78,12 @@ def _resolve_lookups(context, config, lookups):
                 # only lookups for config['tool'] must not fail!
                 pass
             else:
-                log.debug(str(e), exc_info=True)  # this adds the traceback
-                context['error'] = \
-                    'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
-                log.error(str(e))
-                log.error(context['error'])
+                raise GcdtError(msg='lookup for \'%s\' failed: %s' % (k, json.dumps(config[k])))
+                #log.debug(str(e), exc_info=True)  # this adds the traceback
+                #context['error'] = \
+                #    'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
+                #log.error(str(e))
+                #log.error(context['error'])
 
 
 def _resolve_lookups_recurse(awsclient, config, stacks, lookups, is_yugen=False):
@@ -260,14 +262,14 @@ def lookup(params):
                    config - The stack details, etc..)
     """
     context, config = params
-    try:
-        defaults = get_plugin_defaults(config, 'gcdt_lookups')
-        _resolve_lookups(context, config, defaults.get('lookups', []))
-    except GracefulExit:
-        raise
-    except Exception as e:
-        context['error'] = str(e)
-        log.error(context['error'])
+    #try:
+    defaults = get_plugin_defaults(config, 'gcdt_lookups')
+    _resolve_lookups(context, config, defaults.get('lookups', []))
+    #except GracefulExit:
+    #    raise
+    #except Exception as e:
+    #    context['error'] = str(e)
+    #    log.error(context['error'])
 
 
 def incept_defaults(params):
