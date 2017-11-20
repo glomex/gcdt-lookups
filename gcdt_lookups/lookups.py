@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-"""A gcdt-plugin to do lookups."""
+"""A gcdt plugin to do lookups."""
 from __future__ import unicode_literals, print_function
 import sys
 import json
 
 from botocore.exceptions import ClientError
 from gcdt import gcdt_signals
-from gcdt.servicediscovery import get_ssl_certificate, get_outputs_for_stack, \
+from gcdt.servicediscovery import get_ssl_certificate, \
     get_base_ami
 from gcdt.gcdt_logging import getLogger
 from gcdt.gcdt_awsclient import ClientError
-#from gcdt.utils import stack_exists
-from gcdt.kumo_core import stack_exists
 from gcdt.gcdt_defaults import CONFIG_READER_CONFIG
 from gcdt.utils import GracefulExit
+
 
 from .credstash_utils import get_secret, ItemNotFound
 
@@ -25,6 +24,44 @@ if PY3:
 log = getLogger(__name__)
 
 GCDT_TOOLS = ['kumo', 'tenkai', 'ramuda', 'yugen']
+
+
+# copied over from gcdt.servicediscovery so we can change it locally
+# TODO add region_name parameter feature back to gcdt
+def get_outputs_for_stack(awsclient, stack_name, region_name=None):
+    """
+    Read environment from ENV and mangle it to a (lower case) representation
+    Note: gcdt.servicediscovery get_outputs_for_stack((awsclient, stack_name)
+    is used in many cloudformation.py templates!
+
+    :param awsclient:
+    :param stack_name:
+    :param region_name:
+    :return: dictionary containing the stack outputs
+    """
+    client_cf = awsclient.get_client('cloudformation', region_name)
+    response = client_cf.describe_stacks(StackName=stack_name)
+    if response['Stacks'] and 'Outputs' in response['Stacks'][0]:
+        result = {}
+        for output in response['Stacks'][0]['Outputs']:
+            result[output['OutputKey']] = output['OutputValue']
+        return result
+
+
+# copied over from gcdt.kumo_core so we can change it locally
+# TODO add region_name parameter feature back to gcdt
+def stack_exists(awsclient, stack_name, region_name=None):
+    client = awsclient.get_client('cloudformation', region_name)
+    try:
+        response = client.describe_stacks(
+            StackName=stack_name
+        )
+    except GracefulExit:
+        raise
+    except Exception:
+        return False
+    else:
+        return True
 
 
 def _resolve_lookups(context, config, lookups):
@@ -39,7 +76,7 @@ def _resolve_lookups(context, config, lookups):
     # cache outputs for stack (stackdata['stack'] = outputs)
     stackdata = {}
 
-    for stack in stackset:
+    for stack, region_name in stackset:
         # with the '.' you can distinguish between a stack and a certificate
         if '.' in stack and 'ssl' in lookups:
             stackdata.update({
@@ -49,7 +86,9 @@ def _resolve_lookups(context, config, lookups):
             })
         elif 'stack' in lookups:
             try:
-                stackdata.update({stack: get_outputs_for_stack(awsclient, stack)})
+                stackdata.update({
+                    stack: get_outputs_for_stack(awsclient, stack, region_name)
+                })
             except ClientError as e:
                 # probably a greedy lookup
                 pass
@@ -100,39 +139,68 @@ def _resolve_lookups_recurse(awsclient, config, stacks, lookups, is_yugen=False)
                     awsclient, value, stacks, lookups, is_yugen)
 
 
+def _get_lookup_details(value):
+    # helper to extract details
+    # TODO use openapi to verify lookup format is correct
+    splits = value.split(':')
+    region = None
+    lookup_type = splits[1]
+    key = splits[2:]
+    if lookup_type == 'region':
+        region = splits[2]
+        lookup_type = splits[3]
+        key = splits[4:]
+    if len(key) == 1:
+        key = key[0]  # unpack
+    return region, lookup_type, key
+
+
 def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
     # split lookup in elements and resolve the lookup using servicediscovery
     if isinstance(value, basestring):
         if value.startswith('lookup:'):
-            splits = value.split(':')
-            if splits[1] == 'stack' and 'stack' in lookups:
-                if not stack_exists(awsclient, splits[2]):
-                    raise Exception('Stack \'%s\' does not exist.' % splits[2])
-                if len(splits) == 3:
-                    # lookup:stack:<stack-name>
-                    return stacks[splits[2]]
-                elif len(splits) == 4:
-                    # lookup:stack:<stack-name>:<output-name>
-                    return stacks[splits[2]][splits[3]]
+            #splits = value.split(':')
+            region_name, lt, key = _get_lookup_details(value)
+            if region_name is not None:
+                log.debug('executing lookup \'%s\' in \'%s\' region', (lt, region_name))
+            if lt == 'stack' and 'stack' in lookups:
+                if isinstance(key, list):
+                    if not stack_exists(awsclient, key[0], region_name):
+                        raise Exception('Stack \'%s\' does not exist.' % key[0])
+                    if len(key) == 2:
+                        # lookup:stack:<stack-name>:<output-name>
+                        return stacks[key[0]][key[1]]
+                    else:
+                        log.warn('lookup format not as expected for \'%s\'', value)
+                        return value
                 else:
-                    log.warn('lookup format not as expected for \'%s\'', value)
-                    return value
-            elif splits[1] == 'ssl' and 'ssl' in lookups:
-                return list(stacks[splits[2]].values())[0]
-            elif splits[1] == 'secret' and 'secret' in lookups:
+                    if not stack_exists(awsclient, key, region_name):
+                        raise Exception('Stack \'%s\' does not exist.' % key)
+                    # lookup:stack:<stack-name>
+                    return stacks[key]
+            elif lt == 'ssl' and 'ssl' in lookups:
+                return list(stacks[key].values())[0]
+            elif lt == 'secret' and 'secret' in lookups:
                 try:
-                    return get_secret(awsclient, splits[2])
+                    if isinstance(key, list):
+                        return get_secret(awsclient, key[0], region_name=region_name)
+                    return get_secret(awsclient, key, region_name=region_name)
                 except ItemNotFound as e:
-                    if len(splits) > 3 and splits[3] == 'CONTINUE_IF_NOT_FOUND':
-                        log.warning('lookup:secret \'%s\' not found in credstash!', splits[2])
+                    if isinstance(key, list) and key[-1] == 'CONTINUE_IF_NOT_FOUND':
+                        log.warning('lookup:secret \'%s\' not found in credstash!', key[0])
                     else:
                         raise e
-            elif splits[1] == 'baseami' and 'baseami' in lookups:
+            elif lt == 'baseami' and 'baseami' in lookups:
                 # DEPRECATED baseami lookup (21.07.2017)
                 ami_accountid = CONFIG_READER_CONFIG['plugins']['gcdt_lookups']['ami_accountid']
                 return get_base_ami(awsclient, [ami_accountid])
-            elif splits[1] == 'acm' and 'acm' in lookups:
-                cert = _acm_lookup(awsclient, splits[2:], is_yugen)
+            elif lt == 'acm' and 'acm' in lookups:
+                if is_yugen:
+                    # for API Gateway we need to lookup the certs from us-east-1
+                    # set region to `us-east-1`
+                    cert = _acm_lookup(awsclient, key, region_name='us-east-1')
+                else:
+                    cert = _acm_lookup(awsclient, key, region_name=region_name)
                 if cert:
                     return cert
                 else:
@@ -151,11 +219,12 @@ def _identify_stacks_recurse(config, lookups):
     def _identify_single_value(value, stacklist, lookups):
         if isinstance(value, basestring):
             if value.startswith('lookup:'):
-                splits = value.split(':')
-                if splits[1] == 'stack' and 'stack' in lookups:
-                    stacklist.append(splits[2])
-                elif splits[1] == 'ssl' and 'ssl' in lookups:
-                    stacklist.append(splits[2])
+                region_name, lt, key = _get_lookup_details(value)
+                if lt in lookups:
+                    if key and isinstance(key, list):
+                        key = key[0]  # unpack to lookup stack output, not a value!
+                    if lt in ['stack', 'ssl']:
+                        stacklist.append(tuple([key, region_name]))
 
     stacklist = []
     if isinstance(config, dict):
@@ -172,7 +241,7 @@ def _identify_stacks_recurse(config, lookups):
     return set(stacklist)
 
 
-def _acm_lookup(awsclient, names, is_yugen=False):
+def _acm_lookup(awsclient, names, region_name=None):
     """Execute the actual ACM lookup
 
     :param awsclient:
@@ -180,12 +249,7 @@ def _acm_lookup(awsclient, names, is_yugen=False):
     :param is_yugen: for API Gateway we need to lookup the certs from us-east-1
     :return:
     """
-    if is_yugen:
-        # for API Gateway we need to lookup the certs from us-east-1
-        # set region to `us-east-1`
-        client_acm = awsclient.get_client('acm', 'us-east-1')
-    else:
-        client_acm = awsclient.get_client('acm')
+    client_acm = awsclient.get_client('acm', region_name)
 
     # get all certs in issued state
     response = client_acm.list_certificates(

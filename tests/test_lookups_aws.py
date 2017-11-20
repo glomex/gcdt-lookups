@@ -26,6 +26,6 @@ def test_acm_lookup(awsclient):
 def test_acm_lookup_is_yugen(awsclient):
     # for API Gateway certs need to come from us-east-1
     host_list = ['*.infra.glomex.cloud', '*.dev.infra.glomex.cloud']
-    cert_arn = _acm_lookup(awsclient, host_list, True)
+    cert_arn = _acm_lookup(awsclient, host_list, 'us-east-1')
     assert cert_arn is not None
     assert cert_arn.split(':')[3] == 'us-east-1'

@@ -16,17 +16,17 @@ def test_identify_stacks_recurse():
     # make sure result is unique
     # sample from data-platform, ingest
     config = {
-        'PolicyLambdaDefaultVar': "lookup:stack:dp-dev-operations-common:PolicyLambdaDefault",
+        'PolicyLambdaDefaultVar' : "lookup:stack:dp-dev-operations-common:PolicyLambdaDefault",
         'PolicyLambdaDefaultVar2': "lookup:stack:dp-dev-operations-common:PolicyLambdaDefault"
     }
     assert _identify_stacks_recurse(config, ['stack']) == \
-           set(['dp-dev-operations-common'])
+           set([('dp-dev-operations-common', None)])
 
     # sample from pnb-ftp, ftpbackend
     config = {
         'VpcId': "lookup:stack:pnb-dev:DefaultVPCId"
     }
-    assert _identify_stacks_recurse(config, ['stack']) == set(['pnb-dev'])
+    assert _identify_stacks_recurse(config, ['stack']) == set([('pnb-dev', None)])
 
 
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
@@ -47,7 +47,7 @@ def test_stack_lookup_value(mock_stack_exists, mock_get_outputs_for_stack):
     }
     _resolve_lookups(context, config, ['stack'])
     mock_get_outputs_for_stack.assert_called_once_with(
-        'my_awsclient', 'dp-preprod')
+        'my_awsclient', 'dp-preprod', None)
 
     assert config.get('LambdaLookupARN') == \
            'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12'
@@ -74,7 +74,7 @@ def test_stack_lookup_stack_output(mock_stack_exists,
     }
     _resolve_lookups(context, config, ['stack'])
     mock_get_outputs_for_stack.assert_called_once_with(
-        'my_awsclient', 'dp-preprod')
+        'my_awsclient', 'dp-preprod', None)
 
     assert config.get('stack_output') == stack_output
 
@@ -119,7 +119,7 @@ def test_read_config_mock_service_discovery_ssl(
 
     _resolve_lookups(context, config, ['ssl', 'stack'])
     mock_get_outputs_for_stack.assert_called_once_with(
-        'my_awsclient', 'portal-dev')
+        'my_awsclient', 'portal-dev', None)
     mock_get_ssl_certificate.assert_called_once_with(
         'my_awsclient', 'wildcard.glomex.com')
     assert config.get('SSLCert') == \
@@ -336,7 +336,7 @@ def test_secret_lookup(mock_get_secret):
     }
     _resolve_lookups(context, config, ['secret'])
     mock_get_secret.assert_called_once_with(
-        'my_awsclient', 'captaincrunch.bot_token')
+        'my_awsclient', 'captaincrunch.bot_token', region_name=None)
 
     assert config.get('bot_token') == 'foobar1234'
 
@@ -355,7 +355,7 @@ def test_secret_lookup_continue_if_not_found(mock_get_secret, logcapture):
     }
     _resolve_lookups(context, config, ['secret'])
     mock_get_secret.assert_called_once_with(
-        'my_awsclient', 'foo.bar.bazz')
+        'my_awsclient', 'foo.bar.bazz', region_name=None)
 
     assert config.get('bazz_value') == \
            'lookup:secret:foo.bar.bazz:CONTINUE_IF_NOT_FOUND'
@@ -381,7 +381,7 @@ def test_secret_lookup_error_case(mock_get_secret, logcapture):
     }
     lookup((context, config))
     mock_get_secret.assert_called_once_with(
-        'my_awsclient', 'foo.bar.bazz')
+        'my_awsclient', 'foo.bar.bazz', region_name=None)
     assert context['error'] == \
         'lookup for \'bazz_value\' failed: "lookup:secret:foo.bar.bazz"'
     assert config.get('bazz_value') == \
@@ -458,3 +458,21 @@ def test_find_matching_certificate_not_found():
         },
     ]
     assert _find_matching_certificate(certs, names) is None
+
+
+@mock.patch('gcdt_lookups.lookups.get_secret',
+            return_value='foobar1234')
+def test_region_secret_lookup(mock_get_secret):
+    # sample from ops-captaincrunch-slack
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
+    config = {
+        'bot_token': 'lookup:secret:captaincrunch.bot_token'
+    }
+    _resolve_lookups(context, config, ['secret'])
+    mock_get_secret.assert_called_once_with(
+        'my_awsclient', 'captaincrunch.bot_token', region_name=None)
+
+    assert config.get('bot_token') == 'foobar1234'

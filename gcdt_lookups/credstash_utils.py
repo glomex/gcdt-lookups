@@ -40,7 +40,7 @@ class ItemNotFound(Exception):
     pass
 
 
-def get_secret(awsclient, name, version="",  # region=None,
+def get_secret(awsclient, name, version="", region_name=None,
                 table="credential-store", context=None,
                **kwargs):
     '''
@@ -48,7 +48,8 @@ def get_secret(awsclient, name, version="",  # region=None,
     '''
     if context is None:
         context = {}
-    client_ddb = awsclient.get_client('dynamodb')
+    client_ddb = awsclient.get_client('dynamodb', region_name)
+    client_kms = awsclient.get_client('kms', region_name)
 
     if version == "":
         # do a consistent fetch of the credential with the highest version
@@ -79,10 +80,9 @@ def get_secret(awsclient, name, version="",  # region=None,
                     name, version))
         material = response["Item"]
 
-    kms = awsclient.get_client('kms')
     # Check the HMAC before we decrypt to verify ciphertext integrity
     try:
-        kms_response = kms.decrypt(CiphertextBlob=b64decode(material['key']['S']),
+        kms_response = client_kms.decrypt(CiphertextBlob=b64decode(material['key']['S']),
                                    EncryptionContext=context)
 
     except botocore.exceptions.ClientError as e:
