@@ -116,7 +116,6 @@ def _resolve_lookups(context, config, lookups):
                 context['error'] = \
                     'lookup for \'%s\' failed: %s' % (k, json.dumps(config[k]))
                 log.error(str(e))
-                #log.error(context['error'])
 
 
 def _resolve_lookups_recurse(awsclient, config, stacks, lookups, is_yugen=False):
@@ -159,7 +158,6 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
     # split lookup in elements and resolve the lookup using servicediscovery
     if isinstance(value, basestring):
         if value.startswith('lookup:'):
-            #splits = value.split(':')
             region_name, lt, key = _get_lookup_details(value)
             if region_name is not None:
                 log.debug('executing lookup \'%s\' in \'%s\' region', (lt, region_name))
@@ -198,9 +196,9 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
                 if is_yugen:
                     # for API Gateway we need to lookup the certs from us-east-1
                     # set region to `us-east-1`
-                    cert = _acm_lookup(awsclient, key, region_name='us-east-1')
+                    cert = _acm_lookup(awsclient, [key], region_name='us-east-1')
                 else:
-                    cert = _acm_lookup(awsclient, key, region_name=region_name)
+                    cert = _acm_lookup(awsclient, [key], region_name=region_name)
                 if cert:
                     return cert
                 else:
@@ -304,7 +302,7 @@ def _find_matching_certificate(certs, names):
             else:
                 if name in cert['Names']:
                     continue
-                elif '*.' + name.split('.', 1)[1] in cert['Names']:
+                elif '.' in name and '*.' + name.split('.', 1)[1] in cert['Names']:
                     # host name contained in wildcard
                     continue
                 else:
