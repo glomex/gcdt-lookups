@@ -67,6 +67,7 @@ def test_stack_lookup_value(awsclient):
 
 @pytest.mark.aws
 @check_preconditions
+@check_normal_mode
 def test_secret_lookup(awsclient):
     context = {
         '_awsclient': awsclient,
