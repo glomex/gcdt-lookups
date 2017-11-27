@@ -160,7 +160,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
         if value.startswith('lookup:'):
             region_name, lt, key = _get_lookup_details(value)
             if region_name is not None:
-                log.debug('executing lookup \'%s\' in \'%s\' region', (lt, region_name))
+                log.debug('executing lookup \'%s\' in \'%s\' region' % (lt, region_name))
             if lt == 'stack' and 'stack' in lookups:
                 if isinstance(key, list):
                     if not stack_exists(awsclient, key[0], region_name):
