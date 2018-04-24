@@ -50,18 +50,8 @@ def get_outputs_for_stack(awsclient, stack_name, region_name=None):
 
 # copied over from gcdt.kumo_core so we can change it locally
 # TODO add region_name parameter feature back to gcdt
-def stack_exists(awsclient, stack_name, region_name=None):
-    client = awsclient.get_client('cloudformation', region_name)
-    try:
-        response = client.describe_stacks(
-            StackName=stack_name
-        )
-    except GracefulExit:
-        raise
-    except Exception:
-        return False
-    else:
-        return True
+def stack_exists(stacks, stack_name):
+    return stack_name in stacks
 
 
 def _resolve_lookups(context, config, lookups):
@@ -163,7 +153,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
                 log.debug('executing lookup \'%s\' in \'%s\' region' % (lt, region_name))
             if lt == 'stack' and 'stack' in lookups:
                 if isinstance(key, list):
-                    if not stack_exists(awsclient, key[0], region_name):
+                    if not stack_exists(stacks, key[0]):
                         raise Exception('Stack \'%s\' does not exist.' % key[0])
                     if len(key) == 2:
                         # lookup:stack:<stack-name>:<output-name>
@@ -172,7 +162,7 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
                         log.warn('lookup format not as expected for \'%s\'', value)
                         return value
                 else:
-                    if not stack_exists(awsclient, key, region_name):
+                    if not stack_exists(stacks, key):
                         raise Exception('Stack \'%s\' does not exist.' % key)
                     # lookup:stack:<stack-name>
                     return stacks[key]
