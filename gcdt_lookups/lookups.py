@@ -169,6 +169,9 @@ def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
                         raise Exception('Stack \'%s\' does not exist.' % key[0])
                     if len(key) == 2:
                         # lookup:stack:<stack-name>:<output-name>
+                        if (key[1] not in stacks[key[0]] and optional_lookup):
+                            return ''
+
                         return stacks[key[0]][key[1]]
                     else:
                         log.warn('lookup format not as expected for \'%s\'', value)
