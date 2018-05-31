@@ -55,10 +55,6 @@ def test_stack_lookup_value(mock_stack_exists, mock_get_outputs_for_stack):
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
 @mock.patch('gcdt_lookups.lookups.stack_exists', return_value=False)
 def test_stack_lookup_optional_value(mock_stack_exists, mock_get_outputs_for_stack):
-    mock_get_outputs_for_stack.return_value = {
-        'EC2BasicsLambdaArn':
-            'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
-    }
     # sample from data-platform, operations
     context = {
         '_awsclient': 'my_awsclient',
@@ -69,8 +65,6 @@ def test_stack_lookup_optional_value(mock_stack_exists, mock_get_outputs_for_sta
         'LambdaLookupARN': 'lookup:stack:non-existing-stack:NonExistingValue:optional'
     }
     _resolve_lookups(context, config, ['stack'])
-    mock_get_outputs_for_stack.assert_called_once_with(
-        'my_awsclient', 'dp-preprod', None)
 
     assert config.get('LambdaLookupARN') == ''
 

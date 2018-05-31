@@ -138,7 +138,7 @@ def _get_lookup_details(value):
     key = splits[2:]
 
     # support for non-mandatory lookups that will be replaced with empty value
-    if key[-1] == 'optional' and len(key) > 2:
+    if len(key) > 0 and key[-1] == 'optional' and len(key) > 2:
         optional_lookup = True
         key = key[:-1]
 
