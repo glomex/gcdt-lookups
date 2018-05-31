@@ -133,27 +133,39 @@ def _get_lookup_details(value):
     # TODO use openapi to verify lookup format is correct
     splits = value.split(':')
     region = None
+    optional_lookup = False
     lookup_type = splits[1]
     key = splits[2:]
+
+    # support for non-mandatory lookups that will be replaced with empty value
+    if key[-1] == 'optional' and len(key) > 2:
+        optional_lookup = True
+        key = key[:-1]
+
     if lookup_type == 'region':
         region = splits[2]
         lookup_type = splits[3]
         key = splits[4:]
+
+
     if len(key) == 1:
         key = key[0]  # unpack
-    return region, lookup_type, key
+    return region, lookup_type, key, optional_lookup
 
 
 def _resolve_single_value(awsclient, value, stacks, lookups, is_yugen=False):
     # split lookup in elements and resolve the lookup using servicediscovery
     if isinstance(value, basestring):
         if value.startswith('lookup:'):
-            region_name, lt, key = _get_lookup_details(value)
+            region_name, lt, key, optional_lookup = _get_lookup_details(value)
             if region_name is not None:
                 log.debug('executing lookup \'%s\' in \'%s\' region' % (lt, region_name))
             if lt == 'stack' and 'stack' in lookups:
                 if isinstance(key, list):
                     if not stack_exists(stacks, key[0]):
+                        # lookup:stack:<stack-name>:<output-name>:optional
+                        if optional_lookup:
+                            return ''
                         raise Exception('Stack \'%s\' does not exist.' % key[0])
                     if len(key) == 2:
                         # lookup:stack:<stack-name>:<output-name>
@@ -207,7 +219,7 @@ def _identify_stacks_recurse(config, lookups):
     def _identify_single_value(value, stacklist, lookups):
         if isinstance(value, basestring):
             if value.startswith('lookup:'):
-                region_name, lt, key = _get_lookup_details(value)
+                region_name, lt, key, optional_lookup = _get_lookup_details(value)
                 if lt in lookups:
                     if key and isinstance(key, list):
                         key = key[0]  # unpack to lookup stack output, not a value!
