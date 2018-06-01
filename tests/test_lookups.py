@@ -52,6 +52,44 @@ def test_stack_lookup_value(mock_stack_exists, mock_get_outputs_for_stack):
     assert config.get('LambdaLookupARN') == \
            'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12'
 
+@mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
+def test_stack_lookup_optional_value_no_output(mock_stack_exists, mock_get_outputs_for_stack):
+    mock_get_outputs_for_stack.return_value = {
+        'AnotherValue':
+            'arn:aws:lambda:eu-west-1:1122233:function:dp-preprod-lambdaEC2Basics-12',
+    }
+    # sample from data-platform, operations
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
+
+    config = {
+        'LambdaLookupARN': 'lookup:stack:dp-preprod:EC2BasicsLambdaArn:optional'
+    }
+    _resolve_lookups(context, config, ['stack'])
+    mock_get_outputs_for_stack.assert_called_once_with(
+        'my_awsclient', 'dp-preprod', None)
+
+    assert config.get('LambdaLookupARN') == ''
+
+@mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
+@mock.patch('gcdt_lookups.lookups.stack_exists', return_value=False)
+def test_stack_lookup_optional_value_no_stack(mock_stack_exists, mock_get_outputs_for_stack):
+    # sample from data-platform, operations
+    context = {
+        '_awsclient': 'my_awsclient',
+        'tool': 'ramuda'
+    }
+
+    config = {
+        'LambdaLookupARN': 'lookup:stack:non-existing-stack:NonExistingValue:optional'
+    }
+    _resolve_lookups(context, config, ['stack'])
+
+    assert config.get('LambdaLookupARN') == ''
+
 
 @mock.patch('gcdt_lookups.lookups.get_outputs_for_stack')
 @mock.patch('gcdt_lookups.lookups.stack_exists', return_value=True)
